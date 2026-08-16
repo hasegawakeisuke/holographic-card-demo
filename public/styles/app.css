@@ -62,8 +62,10 @@ body {
 }
 
 .site-title {
-  margin: 0 0 0.4rem;
-  font-size: clamp(1.3rem, 4.6vw, 1.9rem);
+  margin: 0 0 0.5rem;
+  /* 見出しが長いので上限を抑えめにして 1〜2 行に収める */
+  font-size: clamp(1.1rem, 3.6vw, 1.55rem);
+  line-height: 1.45;
   letter-spacing: 0.02em;
   background: linear-gradient(100deg, #fff, var(--accent) 42%, #6fd79a);
   -webkit-background-clip: text;
@@ -160,6 +162,7 @@ body {
 .samples {
   text-align: center;
   font-size: 0.78rem;
+  line-height: 2.2;
   color: var(--muted);
 }
 

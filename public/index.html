@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <!-- ハンズのコーポレートグリーン。hands.net の theme-color と同値 -->
     <meta name="theme-color" content="#006b30" />
-    <title>JANコードでホロカードをつくる</title>
+    <title>ハンズネットストアの商品をトレカっぽく表示するデモ</title>
     <meta
       name="description"
       content="JANコードを入力すると、ハンズネットストアの商品画像をポケモンカード風のホログラフィックカードとして表示します。"
@@ -20,7 +20,7 @@
   <body>
     <div class="layout">
       <header class="site-header">
-        <h1 class="site-title">JAN → ホログラフィックカード</h1>
+        <h1 class="site-title">ハンズネットストアの商品をトレカっぽく表示するデモ</h1>
         <p class="site-lead">
           JANコードを入力すると、ハンズネットストアの商品をポケモンカード風に加工して表示します。<br />
           カードにマウスを乗せる（スマホならなぞる）と光ります。
@@ -45,11 +45,14 @@
         <p class="finder__hint" id="hint" role="status"></p>
       </form>
 
+      <!-- カテゴリが偏らないよう、タイプが全て異なる商品を選んでいる -->
       <p class="samples">
-        お試し:
-        <button type="button" data-jan="4549917237131">980円 / common</button>
-        <button type="button" data-jan="4549917237698">3,800円 / holo</button>
-        <button type="button" data-jan="4580145412532">27,940円 / ultra</button>
+        おためし:
+        <button type="button" data-jan="4549917237131">バッグ</button>
+        <button type="button" data-jan="4901126238642">キッチン</button>
+        <button type="button" data-jan="4515664068694">ビューティ</button>
+        <button type="button" data-jan="4537988313526">アウトドア</button>
+        <button type="button" data-jan="4580821654713">パーティ</button>
       </p>
 
       <main class="stage">
