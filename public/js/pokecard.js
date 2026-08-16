@@ -18,56 +18,67 @@
 export const TYPES = {
   grass: {
     label: 'くさ',
+    category: 'アウトドア・ペット用品',
     color: '#4a9e3f',
     icon: '<path d="M12 3c5 2 8 5 8 9a8 8 0 0 1-13.6 5.7C4.7 16 4 13 4 10c3 1 5 2.5 6.5 4.5C11 11 11 6.5 12 3z"/>',
   },
   fire: {
     label: 'ほのお',
+    category: 'キッチン用品',
     color: '#e0532f',
     icon: '<path d="M12 2c1 3.5-1 5-2.5 6.8C8 10.5 7 12 7 14a5 5 0 0 0 10 0c0-2-1-3.6-2.2-5.2C15.5 11 14.5 12 13.5 12c1.5-3.5 0-7.5-1.5-10z"/>',
   },
   water: {
     label: 'みず',
+    category: 'お風呂・掃除用品',
     color: '#3d94d6',
     icon: '<path d="M12 2.5c3.2 4.3 6.5 8 6.5 11.6A6.5 6.5 0 0 1 5.5 14C5.5 10.5 8.8 6.8 12 2.5z"/>',
   },
   lightning: {
     label: 'かみなり',
+    category: '家電・AV機器',
     color: '#eab308',
     icon: '<path d="M13.5 2 5 13.2h5.2L9.4 22 19 10.2h-5.4L13.5 2z"/>',
   },
   psychic: {
-    label: 'ちょうのうりょく',
+    label: 'エスパー',
+    category: 'ハンドメイド・クラフト',
     color: '#9d55c4',
     icon: '<path d="M12 4c4.5 0 8 4.2 8 8s-3.5 8-8 8-8-4.2-8-8 3.5-8 8-8zm0 4.6A3.4 3.4 0 1 0 12 15.4 3.4 3.4 0 0 0 12 8.6z"/>',
   },
   fighting: {
     label: 'かくとう',
+    category: '防災・防犯',
     color: '#c05a28',
     icon: '<path d="M7 5h7a4 4 0 0 1 4 4v6a4 4 0 0 1-4 4H7a2 2 0 0 1-2-2v-2h4v-2H5v-2h4v-2H5V7a2 2 0 0 1 2-2z"/>',
   },
   darkness: {
     label: 'あく',
+    category: '靴磨き・シューケア',
     color: '#3d4451',
     icon: '<path d="M15.5 3A9 9 0 1 0 21 13.2 7.2 7.2 0 0 1 15.5 3z"/>',
   },
   metal: {
     label: 'はがね',
+    category: 'DIY・工具',
     color: '#7e8794',
     icon: '<path d="M12 2.5 20 7v10l-8 4.5L4 17V7l8-4.5zm0 5.2L8.2 9.9v4.2L12 16.3l3.8-2.2V9.9L12 7.7z"/>',
   },
   fairy: {
     label: 'フェアリー',
+    category: 'ビューティ・ヘルスケア',
     color: '#d95d93',
     icon: '<path d="M12 2.5 14.2 9l6.8.3-5.3 4.2 1.8 6.5L12 16.4 6.5 20l1.8-6.5L3 9.3 9.8 9 12 2.5z"/>',
   },
   dragon: {
     label: 'ドラゴン',
+    category: 'パーティグッズ',
     color: '#c19a2b',
     icon: '<path d="M3 8.5 9 10l3-6.5L15 10l6-1.5-3.5 5.2 3 5.8-6.5-2L12 21l-2-3.5-6.5 2 3-5.8L3 8.5z"/>',
   },
   colorless: {
     label: 'ノーマル',
+    category: '文房具・インテリア・バッグ',
     color: '#b9b3a7',
     icon: '<path d="M12 3.2c2.6 0 4 2.2 4.6 4.4.5 1.8 2.2 2.6 2.2 4.9a6.8 6.8 0 0 1-13.6 0c0-2.3 1.7-3.1 2.2-4.9C8 5.4 9.4 3.2 12 3.2z"/>',
   },
@@ -123,6 +134,16 @@ export function weaknessOf(typeId) {
   return WEAKNESS[typeId] ?? 'fighting';
 }
 
+/**
+ * 表示用のタイプ名。
+ * このサイトの主役はあくまでハンズの商品なので、商品カテゴリを前に出し、
+ * ポケモンのタイプは括弧内に添える。
+ */
+export function typeDisplay(typeId) {
+  const type = TYPES[typeId] ?? TYPES.colorless;
+  return `${type.category}（${type.label}）`;
+}
+
 /** タイプアイコンの SVG 要素をつくる */
 export function typeIcon(typeId, { size = 20, title = true } = {}) {
   const type = TYPES[typeId] ?? TYPES.colorless;
@@ -136,7 +157,7 @@ export function typeIcon(typeId, { size = 20, title = true } = {}) {
   if (title) {
     svg.setAttribute('role', 'img');
     const t = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-    t.textContent = type.label;
+    t.textContent = typeDisplay(typeId);
     svg.append(t);
   }
   // icon は自前で定義した固定文字列のみ。外部入力は入らない

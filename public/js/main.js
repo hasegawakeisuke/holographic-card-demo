@@ -21,6 +21,7 @@ import {
   layoutFromRarity,
   rarityFromPrice,
   retreatCost,
+  typeDisplay,
   typeFromCategories,
   typeIcon,
   weaknessOf,
@@ -349,7 +350,7 @@ function renderStats(type, rarity) {
   );
 
   el.stats.replaceChildren(
-    make('よわ点', weakValue),
+    make('弱点', weakValue),
     make('ていこう', document.createTextNode('—')),
     make('にげる', retreat),
   );
@@ -400,11 +401,11 @@ function renderMeta(goods) {
     ['カテゴリ', goods.categories?.join(' > ') || null],
     [
       'タイプ',
-      `${TYPES[type].label}${type === autoType ? '（自動）' : '（手動）'}`,
+      `${typeDisplay(type)}／${type === autoType ? '自動' : '手動'}`,
     ],
     [
       'レアリティ',
-      `${RARITY_LABEL[rarity]}${rarity === autoRarity ? '（自動）' : '（手動）'}`,
+      `${RARITY_LABEL[rarity]}／${rarity === autoRarity ? '自動' : '手動'}`,
     ],
   ].filter(([, v]) => v);
 
@@ -481,10 +482,10 @@ function showImage(src) {
 // ------------------------------------------------------------------ コントロール
 
 function buildControlOptions() {
-  for (const [id, meta] of Object.entries(TYPES)) {
+  for (const id of Object.keys(TYPES)) {
     const opt = document.createElement('option');
     opt.value = id;
-    opt.textContent = meta.label;
+    opt.textContent = typeDisplay(id);
     el.ctlType.append(opt);
   }
   for (const id of RARITIES) {

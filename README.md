@@ -125,7 +125,7 @@ wrangler.jsonc     Workers 設定（静的アセット + Worker）
 | kitchen | ほのお | diy | はがね |
 | bathtoiletries / cleanlaundry | みず | prevention | かくとう |
 | electronics | かみなり | shoecare | あく |
-| outdoor / pet | くさ | crafts | ちょうのうりょく |
+| outdoor / pet | くさ | crafts | エスパー |
 | beauty-healthcare | フェアリー | party | ドラゴン |
 | stationery / interior / travel | ノーマル | (未知) | ノーマル |
 
@@ -139,7 +139,7 @@ wrangler.jsonc     Workers 設定（静的アセット + Worker）
 - **ダメージ** = 価格の対数写像（980円→180、3,800円→230、27,940円→300）。
   線形だと安い商品が下限に潰れ、高い商品が上限に張り付くため
 - **エネルギー数 / にげる** = レアリティの段階
-- **よわ点** = タイプ相性表から（くさ→ほのお 等）
+- **弱点** = タイプ相性表から（くさ→ほのお 等）
 - **HP** = 税込価格
 - **進化段階** = レアリティ（たね / 1進化 / 2進化）
 
