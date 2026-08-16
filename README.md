@@ -4,6 +4,7 @@ JANコードを入力すると、[ハンズネットストア](https://hands.net
 ホログラフィックカードとして表示するデモ。
 
 ホロ効果そのものの実装解説は [docs/holographic-css.md](docs/holographic-css.md) にある。
+動くデモ付きの版は公開サイトの `/docs/holographic-css.html` で開ける。
 
 ## 動かす
 
@@ -41,8 +42,13 @@ src/
   types.ts         API 契約
 wrangler.jsonc     Workers 設定（静的アセット + Worker）
 docs/
-  holographic-css.md  ホロ効果の技術解説（3D変形・合成モード・CSS変数）
+  holographic-css.md    ホロ効果の技術解説（3D変形・合成モード・CSS変数）
+  holographic-css.html  同内容 + 動くデモ。/docs/holographic-css.html で配信される
 ```
+
+`docs/` は静的アセットの配信対象（`public/`）の外にあるが、`wrangler.jsonc` の
+`rules` で HTML を文字列としてバンドルへ取り込み、Worker が同じパスで返している
+（[src/app.ts](src/app.ts)）。`public/` に複製を置かずに済むので、実体は常に1ファイル。
 
 ### 設計方針
 
@@ -80,7 +86,15 @@ docs/
 
 `src/app.ts` `src/hands.ts` `src/types.ts` と `public/` 配下は**一切変更不要**。
 
-## API
+## ルーティング
+
+静的アセット（`public/`）が先に処理され、一致しなかったリクエストだけ Worker に届く。
+
+| パス | 返すもの |
+| --- | --- |
+| `/` ほか | `public/` の静的アセット |
+| `/api/goods/:jan` | 商品情報の JSON（下記） |
+| `/docs/holographic-css.html` | `docs/` のドキュメント（バンドル済みの文字列） |
 
 ### `GET /api/goods/:jan`
 

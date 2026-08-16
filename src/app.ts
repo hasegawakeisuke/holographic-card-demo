@@ -9,6 +9,9 @@
 import { Hono } from 'hono';
 import { extractGoods, hasValidCheckDigit, isValidJanFormat, productPageUrl } from './hands';
 import type { ApiError, Goods } from './types';
+// wrangler.jsonc の rules 設定により、HTML が文字列としてバンドルされる。
+// 実体は docs/ に置いたまま公開URLから読めるようにするための取り込み。
+import holographicCssDoc from '../docs/holographic-css.html';
 
 /** 取得元に名乗る User-Agent。問い合わせ先を含めるのが作法 */
 const USER_AGENT =
@@ -28,6 +31,25 @@ const CACHE_CONTROL = 'public, max-age=300, s-maxage=86400, stale-while-revalida
 const app = new Hono();
 
 app.get('/api/health', (c) => c.json({ ok: true }));
+
+/**
+ * ドキュメント配信。
+ *
+ * 静的アセットの配信対象は public/ だけなので、docs/ 配下は本来 URL から見えない。
+ * かといって public/ に複製を置くと二重管理になる。そこでビルド時に文字列として
+ * 取り込み、Worker が同じパスで返している。実体は docs/ の1ファイルのまま。
+ */
+const DOCS: Record<string, string> = {
+  '/docs/holographic-css.html': holographicCssDoc,
+};
+
+app.get('/docs/:file', (c) => {
+  const doc = DOCS[c.req.path];
+  if (!doc) return c.text('Not Found', 404);
+  return c.html(doc, 200, {
+    'cache-control': 'public, max-age=300, s-maxage=86400',
+  });
+});
 
 app.get('/api/goods/:jan', async (c) => {
   const jan = c.req.param('jan').trim();

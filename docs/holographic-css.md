@@ -2,6 +2,14 @@
 
 [public/styles/card.css](../public/styles/card.css) と [public/js/card.js](../public/js/card.js) の技術解説。
 
+> **動くデモ付きの版**が [holographic-css.html](holographic-css.html) にある。
+> 傾けたときの変数の実測値や、合成モードを切り替えた比較を実際に触って確認できる。
+>
+> 公開サイトの **`/docs/holographic-css.html`** で直接開ける
+> （ローカルなら `npm run dev` 後に <http://localhost:8787/docs/holographic-css.html>）。
+> 外部リソースを一切読まない単体完結のHTMLなので、ファイルをブラウザに
+> ドラッグしても同じように動く。
+
 画像やWebGLを一切使わず、**グラデーション・合成モード・3D変形**の3つだけでトレカの箔を再現している。
 JavaScript がやるのはカスタムプロパティを4つ書き込むことだけで、見た目の計算はすべてCSS側にある。
 そのため演出を変えたいときは CSS だけを触ればよい。

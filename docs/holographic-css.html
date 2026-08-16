@@ -1,0 +1,842 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="light dark" />
+<meta name="description" content="card.css がグラデーション・合成モード・3D変形だけで箔を再現している仕組みの解説。デモは実際に動く。" />
+<title>ホログラフィックCSSの仕組み</title>
+
+<style>
+  /* ---------------------------------------------------------------- tokens */
+  :root {
+    --ground: #f6f5f1;
+    --surface: #ffffff;
+    --surface-2: #eeece6;
+    --ink: #14171c;
+    --ink-2: #4a5260;
+    --muted: #6b7383;
+    --rule: #ddd9d0;
+    --accent: #0f7a67;
+    --accent-soft: #e2f0ec;
+    --code-bg: #14171c;
+    --code-ink: #e9ecf2;
+    --demo-ground: #2a2f3a;
+
+    --s1: #ff7773;
+    --s2: #ffed5f;
+    --s3: #a8ff5f;
+    --s4: #83fff7;
+    --s5: #7894ff;
+    --s6: #d875ff;
+
+    --serif: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", serif;
+    --sans: "Hiragino Sans", "Yu Gothic", "YuGothic", "Noto Sans JP", system-ui, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+
+    --measure: 42rem;
+  }
+
+  :root:not([data-theme="light"]) {
+    color-scheme: light;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0f1217;
+      --surface: #171c25;
+      --surface-2: #1e242f;
+      --ink: #e8ebf2;
+      --ink-2: #b6becd;
+      --muted: #8b94a5;
+      --rule: #2a3140;
+      --accent: #6fdcc4;
+      --accent-soft: #16302c;
+      --code-bg: #0a0d12;
+      --code-ink: #dfe4ee;
+      --demo-ground: #0a0d12;
+      color-scheme: dark;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0f1217;
+    --surface: #171c25;
+    --surface-2: #1e242f;
+    --ink: #e8ebf2;
+    --ink-2: #b6becd;
+    --muted: #8b94a5;
+    --rule: #2a3140;
+    --accent: #6fdcc4;
+    --accent-soft: #16302c;
+    --code-bg: #0a0d12;
+    --code-ink: #dfe4ee;
+    --demo-ground: #0a0d12;
+    color-scheme: dark;
+  }
+
+  /* ---------------------------------------------------------------- base */
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.85;
+    -webkit-font-smoothing: antialiased;
+    padding: clamp(2rem, 6vw, 4.5rem) 1.25rem 6rem;
+  }
+
+  .wrap {
+    max-width: var(--measure);
+    margin-inline: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 3.25rem;
+  }
+
+  /* spectrum hairline — 記事の区切りに本文で扱う虹そのものを使う */
+  .spectrum {
+    height: 2px;
+    border: 0;
+    margin: 0;
+    background: linear-gradient(
+      90deg, var(--s1), var(--s2), var(--s3), var(--s4), var(--s5), var(--s6), var(--s1)
+    );
+    opacity: 0.85;
+  }
+
+  /* ---------------------------------------------------------------- head */
+  header { display: flex; flex-direction: column; gap: 1rem; }
+
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  h1 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: clamp(1.9rem, 6vw, 2.9rem);
+    line-height: 1.3;
+    letter-spacing: 0.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .lede {
+    margin: 0;
+    color: var(--ink-2);
+    font-size: 1.03rem;
+  }
+
+  /* ---------------------------------------------------------------- sections */
+  section { display: flex; flex-direction: column; gap: 1.1rem; }
+
+  h2 {
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 1.45rem;
+    line-height: 1.5;
+    margin: 0;
+    padding-top: 0.4rem;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    margin: 0.6rem 0 -0.3rem;
+    color: var(--ink);
+  }
+
+  p { margin: 0; color: var(--ink-2); }
+  p strong { color: var(--ink); font-weight: 700; }
+
+  .note {
+    border-left: 2px solid var(--accent);
+    padding: 0.15rem 0 0.15rem 1rem;
+    color: var(--ink-2);
+    font-size: 0.94rem;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--accent-soft);
+    color: var(--ink);
+    padding: 0.1em 0.38em;
+    border-radius: 3px;
+    word-break: break-word;
+  }
+
+  pre {
+    margin: 0;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 1rem 1.1rem;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    line-height: 1.75;
+    tab-size: 2;
+  }
+  pre code { background: none; padding: 0; color: inherit; font-size: inherit; }
+  .c-prop { color: var(--s4); }
+  .c-val  { color: var(--s2); }
+  .c-com  { color: var(--muted); font-style: italic; }
+  .c-sel  { color: var(--s6); }
+
+  /* ---------------------------------------------------------------- tables */
+  .tablewrap { overflow-x: auto; }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.88rem;
+    min-width: 30rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.7rem;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  td:first-child { font-family: var(--mono); font-size: 0.82rem; white-space: nowrap; }
+
+  /* ---------------------------------------------------------------- demos */
+  .demo {
+    background: var(--demo-ground);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    padding: 1.6rem 1.25rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+  }
+  .demo__cap {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #8b94a5;
+    text-align: center;
+  }
+
+  /* ---- 共通: デモ用のダミー商品カード（本物と同じ構造・同じ変数名） ---- */
+  .k {
+    --mx: 50%; --my: 50%;
+    --rx: 0deg; --ry: 0deg;
+    --o: 0; --rest: 0.4;
+    --shine-opacity: 0.7;
+    --glare-opacity: 0.8;
+    position: relative;
+    width: 190px;
+    aspect-ratio: 63 / 88;
+    perspective: 1200px;
+    isolation: isolate;
+    flex: none;
+  }
+  .k__inner {
+    position: relative;
+    width: 100%; height: 100%;
+    border-radius: 5% / 3.5%;
+    transform-style: preserve-3d;
+    transform: rotateX(var(--rx)) rotateY(var(--ry));
+    transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+    background: linear-gradient(150deg, #d9be6e, #8c6f20 45%, #f3e7c6);
+    padding: 5%;
+    overflow: hidden;
+    box-shadow: 0 14px 28px -14px rgba(0,0,0,0.7);
+    will-change: transform;
+  }
+  .k.on .k__inner { transition: none; }
+  .k__face {
+    width: 100%; height: 100%;
+    border-radius: 3% / 2%;
+    background: linear-gradient(170deg, #fdfaf2, #f2ecdc 55%, #e2d6b4);
+    padding: 7% 8%;
+    display: flex; flex-direction: column; gap: 5%;
+  }
+  .k__t {
+    font-size: 8px; font-weight: 700; color: #1b1e25;
+    display: flex; justify-content: space-between; gap: 4px;
+  }
+  .k__t b { color: #b03a2b; }
+  /* 商品写真の代役。白地 + 濃い被写体 の両方を持たせて合成の効きを見せる */
+  .k__img {
+    flex: 1;
+    border: 2px solid #8c6f20;
+    background:
+      radial-gradient(60% 42% at 50% 78%, #2f3a44 0 42%, transparent 43%),
+      linear-gradient(#5b7d8d 0 0) 50% 24% / 26% 46% no-repeat,
+      linear-gradient(#cfd8dc 0 0) 50% 15% / 14% 12% no-repeat,
+      #ffffff;
+  }
+  .k__b { height: 9%; background: rgba(0,0,0,0.14); border-radius: 2px; }
+
+  /* ホロ層 — 本物の card.css と同じ指定 */
+  .k__shine, .k__glare {
+    position: absolute; inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 2;
+    transition: opacity 0.35s ease;
+  }
+  .k__shine {
+    background-image: repeating-linear-gradient(-22deg,
+      var(--s1) 4%, var(--s2) 10%, var(--s3) 16%,
+      var(--s4) 22%, var(--s5) 28%, var(--s6) 34%, var(--s1) 40%);
+    background-size: 200% 200%;
+    background-position: calc(var(--mx) * 1.2) calc(var(--my) * 1.2);
+    mix-blend-mode: multiply;
+    opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.85);
+    filter: saturate(1.4) contrast(0.9);
+  }
+  .k__dodge {
+    background-image: repeating-linear-gradient(98deg,
+      var(--s1) 0%, var(--s2) 8%, var(--s3) 16%,
+      var(--s4) 24%, var(--s5) 32%, var(--s6) 40%, var(--s1) 48%);
+    background-size: 160% 160%;
+    background-position: calc(100% - var(--mx)) calc(100% - var(--my));
+    mix-blend-mode: color-dodge;
+    opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.55);
+    filter: brightness(0.85) contrast(1.6);
+  }
+  .k__glare {
+    background-image: radial-gradient(farthest-corner circle at var(--mx) var(--my),
+      rgba(255,255,255,0.85) 8%, rgba(255,255,255,0.5) 20%, rgba(0,0,0,0.35) 100%);
+    mix-blend-mode: overlay;
+    opacity: calc(var(--o) * var(--glare-opacity));
+    z-index: 3;
+  }
+
+  /* ---- 変数の実測値表示 ---- */
+  .readout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(5.4rem, 1fr));
+    gap: 0.4rem;
+    width: 100%;
+    max-width: 26rem;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+  }
+  .readout div {
+    background: rgba(127,140,160,0.14);
+    border-radius: 5px;
+    padding: 0.4rem 0.5rem;
+    color: #c9d0dc;
+    display: flex; flex-direction: column; gap: 0.1rem;
+  }
+  .readout span { color: #8b94a5; font-size: 0.64rem; }
+  .readout b { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* ---- 合成モード比較 ---- */
+  .compare {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1rem;
+    width: 100%;
+  }
+  .compare figure { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 0.6rem; }
+  .compare figcaption {
+    font-family: var(--mono); font-size: 0.68rem; color: #9aa3b4; text-align: center; line-height: 1.6;
+  }
+  .compare .k { width: 100%; max-width: 150px; --o: 1; --rest: 1; }
+  .compare .k__inner { transform: none; }
+  .m-none .k__shine, .m-none .k__dodge, .m-none .k__glare { display: none; }
+  .m-mul .k__dodge, .m-mul .k__glare { display: none; }
+  .m-dodge .k__shine, .m-dodge .k__glare { display: none; }
+  .m-both .k__glare { display: none; }
+
+  /* ---- 分解図（説明対象の3D変形そのもので描く） ---- */
+  .stack {
+    --explode: 26;
+    width: 100%;
+    height: 300px;
+    perspective: 900px;
+    display: grid;
+    place-items: center;
+  }
+  .stack__in {
+    position: relative;
+    width: 150px;
+    aspect-ratio: 63/88;
+    transform-style: preserve-3d;
+    transform: rotateX(56deg) rotateZ(-32deg);
+  }
+  .plane {
+    position: absolute; inset: 0;
+    border-radius: 6px;
+    border: 1px solid rgba(160,175,200,0.55);
+    display: grid; place-items: center;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    color: #10141b;
+    text-align: center;
+    padding: 4px;
+    line-height: 1.4;
+    backface-visibility: visible;
+  }
+  .p1 { background: rgba(255,255,255,0.94); transform: translateZ(calc(var(--explode) * 0px)); }
+  .p2 { background: rgba(168,255,95,0.55);  transform: translateZ(calc(var(--explode) * 1px)); }
+  .p3 { background: rgba(131,255,247,0.55); transform: translateZ(calc(var(--explode) * 2px)); }
+  .p4 { background: rgba(255,255,255,0.6);  transform: translateZ(calc(var(--explode) * 3px)); }
+
+  .slider {
+    display: flex; align-items: center; gap: 0.75rem;
+    font-family: var(--mono); font-size: 0.7rem; color: #8b94a5;
+    width: 100%; max-width: 22rem;
+  }
+  input[type="range"] { flex: 1; accent-color: var(--accent); }
+  input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+  /* ---------------------------------------------------------------- foot */
+  footer {
+    font-size: 0.82rem;
+    color: var(--muted);
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+  footer a { color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .k__inner { transition: none; }
+    * { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="eyebrow">pokecard-hands / card.css</div>
+    <h1>ホログラフィックCSSの仕組み</h1>
+    <p class="lede">
+      画像やWebGLを一切使わず、<strong>グラデーション・合成モード・3D変形</strong>の3つだけで
+      トレカの箔を再現している。JavaScript がやるのは数値を4つ書き込むことだけで、
+      見た目の計算はすべてCSS側にある。このページのカードは実際に動く。
+    </p>
+  </header>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== 全体像 -->
+  <section>
+    <h2>全体像 — 4枚の板を重ねる</h2>
+    <p>
+      カードは<strong>4層の重ね合わせ</strong>でできている。下から順に、商品画像、虹色の層が2枚、
+      ポインタ追従の光沢が1枚。すべて同じ位置に <code>position: absolute; inset: 0</code> で
+      置かれ、重なり順は <code>z-index</code> で固定している。
+    </p>
+
+    <div class="demo">
+      <div class="stack" id="stack">
+        <div class="stack__in">
+          <div class="plane p1">① カード面<br />画像・文字</div>
+          <div class="plane p2">② shine<br />multiply</div>
+          <div class="plane p3">③ shine<br />color-dodge</div>
+          <div class="plane p4">④ glare<br />overlay</div>
+        </div>
+      </div>
+      <div class="slider">
+        <label for="ex">分解</label>
+        <input type="range" id="ex" min="0" max="30" value="22" />
+      </div>
+      <p class="demo__cap">この分解図自体も rotateX / rotateZ と translateZ で描いている</p>
+    </div>
+
+    <p class="note">
+      層を分けるのは、<strong>合成モードが層ごとにしか指定できない</strong>ため。
+      1枚の要素に「白地には色を乗せ、暗部は光らせる」を同時にやらせることはできない。
+    </p>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== 3D -->
+  <section>
+    <h2>① 立体感 — perspective と rotate</h2>
+    <p>
+      カードが傾いて見えるのは <code>rotateX()</code> / <code>rotateY()</code> の2行だけ。
+      重要なのは<strong>回転させる要素の親に <code>perspective</code> を置く</strong>こと。
+      これが無いと回転しても平行投影のまま潰れて見え、奥行きが出ない。
+    </p>
+
+<pre><code><span class="c-sel">.card</span> {
+  <span class="c-prop">perspective</span>: <span class="c-val">1400px</span>;   <span class="c-com">/* 視点の距離。小さいほど強い遠近感 */</span>
+  <span class="c-prop">isolation</span>: <span class="c-val">isolate</span>;    <span class="c-com">/* 合成をカード内で完結させる（後述） */</span>
+}
+
+<span class="c-sel">.card__inner</span> {
+  <span class="c-prop">transform-style</span>: <span class="c-val">preserve-3d</span>;
+  <span class="c-prop">transform</span>: <span class="c-val">rotateX(var(--rx)) rotateY(var(--ry))</span>;
+  <span class="c-prop">transition</span>: <span class="c-val">transform .6s cubic-bezier(.23, 1, .32, 1)</span>;
+  <span class="c-prop">will-change</span>: <span class="c-val">transform</span>;
+}</code></pre>
+
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>プロパティ</th><th>役割</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>perspective</td><td>子要素に遠近法を与える。値は「画面から視点までの距離」で、小さいほど歪みが強い</td></tr>
+          <tr><td>transform-style</td><td><code>preserve-3d</code> で子要素も同じ3D空間に置く。既定の <code>flat</code> だと子が平面に潰れる</td></tr>
+          <tr><td>rotateX / rotateY</td><td>横方向のポインタ移動を Y軸回転に、縦方向を X軸回転に割り当てる（符号は反転）</td></tr>
+          <tr><td>will-change</td><td>変形をGPU側に持ち上げ、毎フレームの再描画を避ける</td></tr>
+          <tr><td>transition</td><td>ポインタが離れたときだけ効かせる。追従中は外して遅延をなくす</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      追従中は <code>.is-active</code> を付けて <code>transition</code> を切っている。
+      付けたままだと指の動きにカードが遅れて付いてきて、粘ついた感触になる。
+    </p>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== 変数 -->
+  <section>
+    <h2>② 追従 — JavaScriptは変数を書くだけ</h2>
+    <p>
+      JavaScript の仕事は <code>pointermove</code> で<strong>カスタムプロパティを4つ更新すること</strong>だけ。
+      要素のスタイルを直接いじらないので、演出を変えたいときはCSSだけ触ればよい。
+      下のカードを動かすと、実際に書き込まれている値が見える。
+    </p>
+
+    <div class="demo">
+      <div class="k" id="live">
+        <div class="k__inner">
+          <div class="k__face">
+            <div class="k__t"><span>ハンズ商品</span><b>HP 3800</b></div>
+            <div class="k__img"></div>
+            <div class="k__b"></div>
+          </div>
+          <div class="k__shine"></div>
+          <div class="k__shine k__dodge"></div>
+          <div class="k__glare"></div>
+        </div>
+      </div>
+      <div class="readout" id="ro">
+        <div><span>--mx</span><b>50%</b></div>
+        <div><span>--my</span><b>50%</b></div>
+        <div><span>--rx</span><b>0deg</b></div>
+        <div><span>--ry</span><b>0deg</b></div>
+        <div><span>--o</span><b>0</b></div>
+      </div>
+      <p class="demo__cap">カードの上でポインタを動かす（タッチでも可）</p>
+    </div>
+
+<pre><code><span class="c-com">// 座標を 0〜1 に正規化して、そのまま変数へ流し込む</span>
+const cx = px - 0.5, cy = py - 0.5;
+
+card.style.setProperty(<span class="c-val">'--mx'</span>, `${px * 100}%`);
+card.style.setProperty(<span class="c-val">'--my'</span>, `${py * 100}%`);
+card.style.setProperty(<span class="c-val">'--ry'</span>, `${ cx * 32}deg`);
+card.style.setProperty(<span class="c-val">'--rx'</span>, `${-cy * 32}deg`);</code></pre>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>変数</th><th>使われ先</th></tr></thead>
+        <tbody>
+          <tr><td>--mx / --my</td><td>虹色層の <code>background-position</code> と、光沢の <code>radial-gradient</code> の中心</td></tr>
+          <tr><td>--rx / --ry</td><td><code>transform</code> の回転角</td></tr>
+          <tr><td>--o</td><td>効果全体の不透明度。ホバーで 0 → 1</td></tr>
+          <tr><td>--rest</td><td>静止時の下限値。0 にすると触るまでただの写真に見えてしまう</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>
+      更新は <code>requestAnimationFrame</code> で1フレームに1回へ間引いている。
+      <code>pointermove</code> は毎秒120回以上発火することがあり、そのたびに書き込むと無駄になる。
+    </p>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== ホロ -->
+  <section>
+    <h2>③ 虹色 — グラデーション＋合成モード</h2>
+    <p>
+      虹色そのものは <code>repeating-linear-gradient</code> で作った<strong>ただの縞模様</strong>。
+      これを <code>mix-blend-mode</code> で下の層と混ぜることで、光を反射しているように見せている。
+      <code>background-size</code> を 200% にして余白を作り、<code>background-position</code> を
+      ポインタ位置に連動させることで縞が流れる。
+    </p>
+
+<pre><code><span class="c-sel">.card__shine</span> {
+  <span class="c-prop">background-image</span>: <span class="c-val">repeating-linear-gradient(-22deg,
+      #ff7773 4%, #ffed5f 10%, #a8ff5f 16%,
+      #83fff7 22%, #7894ff 28%, #d875ff 34%, #ff7773 40%)</span>;
+  <span class="c-prop">background-size</span>: <span class="c-val">200% 200%</span>;
+  <span class="c-prop">background-position</span>: <span class="c-val">calc(var(--mx) * 1.2) calc(var(--my) * 1.2)</span>;
+  <span class="c-prop">mix-blend-mode</span>: <span class="c-val">multiply</span>;
+  <span class="c-prop">filter</span>: <span class="c-val">saturate(1.4) contrast(.9)</span>;
+}</code></pre>
+
+    <h3>なぜ2層必要か</h3>
+    <p>
+      本家 pokemon-cards-css は <code>color-dodge</code> の1層で成立する。ポケカの絵柄は
+      色が濃く、暗部が多いからだ。ところが<strong>ハンズの商品写真は白背景</strong>で、
+      <code>color-dodge</code> は明るい部分をさらに明るくする性質があるため、白地では完全に飛んで
+      何も見えなくなる。そこで性質が逆の <code>multiply</code> を重ねている。
+    </p>
+
+    <div class="demo">
+      <div class="compare">
+        <figure class="m-none">
+          <div class="k"><div class="k__inner"><div class="k__face">
+            <div class="k__t"><span>商品</span><b>HP</b></div><div class="k__img"></div><div class="k__b"></div>
+          </div><div class="k__shine"></div><div class="k__shine k__dodge"></div><div class="k__glare"></div></div></div>
+          <figcaption>合成なし<br />元の写真</figcaption>
+        </figure>
+        <figure class="m-mul">
+          <div class="k"><div class="k__inner"><div class="k__face">
+            <div class="k__t"><span>商品</span><b>HP</b></div><div class="k__img"></div><div class="k__b"></div>
+          </div><div class="k__shine"></div><div class="k__shine k__dodge"></div><div class="k__glare"></div></div></div>
+          <figcaption>multiply のみ<br />白地に色が乗る</figcaption>
+        </figure>
+        <figure class="m-dodge">
+          <div class="k"><div class="k__inner"><div class="k__face">
+            <div class="k__t"><span>商品</span><b>HP</b></div><div class="k__img"></div><div class="k__b"></div>
+          </div><div class="k__shine"></div><div class="k__shine k__dodge"></div><div class="k__glare"></div></div></div>
+          <figcaption>color-dodge のみ<br />暗部だけ光る</figcaption>
+        </figure>
+        <figure class="m-both">
+          <div class="k"><div class="k__inner"><div class="k__face">
+            <div class="k__t"><span>商品</span><b>HP</b></div><div class="k__img"></div><div class="k__b"></div>
+          </div><div class="k__shine"></div><div class="k__shine k__dodge"></div><div class="k__glare"></div></div></div>
+          <figcaption>両方<br />白地も暗部も出る</figcaption>
+        </figure>
+      </div>
+      <p class="demo__cap">同じ縞模様・同じ写真で、合成モードだけを変えた比較</p>
+    </div>
+
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>合成モード</th><th>性質</th><th>この実装での役割</th></tr></thead>
+        <tbody>
+          <tr><td>multiply</td><td>掛け算。明るい部分ほど下の色に染まる</td><td>白い背景に虹色を乗せる</td></tr>
+          <tr><td>color-dodge</td><td>除算。下が明るいほど飛ぶ、暗部が発光する</td><td>枠や被写体の影を光らせる</td></tr>
+          <tr><td>overlay</td><td>下の明暗を保ったままコントラストを付ける</td><td>ポインタ位置の光沢</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p class="note">
+      <code>filter</code> は合成の<strong>前処理</strong>。<code>color-dodge</code> 側に
+      <code>brightness(.85) contrast(1.6)</code> を掛けて、飛びすぎないよう素材を沈めてから混ぜている。
+    </p>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== 光沢 -->
+  <section>
+    <h2>④ 光沢 — 中心が動く放射グラデーション</h2>
+    <p>
+      光沢は <code>radial-gradient</code> の<strong>中心座標に変数を直接埋め込む</strong>だけ。
+      中心が白、外周が黒のグラデーションを <code>overlay</code> で合成すると、
+      中心は明るく、周辺は締まって見え、球面で光を反射しているように感じられる。
+    </p>
+
+<pre><code><span class="c-sel">.card__glare</span> {
+  <span class="c-prop">background-image</span>: <span class="c-val">radial-gradient(farthest-corner circle at var(--mx) var(--my),
+      rgba(255,255,255,.85)  8%,
+      rgba(255,255,255,.5)  20%,
+      rgba(0,0,0,.35)      100%)</span>;
+  <span class="c-prop">mix-blend-mode</span>: <span class="c-val">overlay</span>;
+  <span class="c-prop">opacity</span>: <span class="c-val">calc(var(--o) * var(--glare-opacity))</span>;
+}</code></pre>
+
+    <p>
+      <code>farthest-corner</code> は「最も遠い角までを半径とする」指定。
+      中心が端に寄っても光が途中で途切れず、カード全面を覆い続ける。
+    </p>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== 強度 -->
+  <section>
+    <h2>⑤ 強さの制御 — calc と max だけで分岐する</h2>
+    <p>
+      レアリティやタイプによる差は、<strong>すべて変数の掛け算</strong>で表している。
+      CSSに条件分岐は無いが、<code>calc()</code> と <code>max()</code> を使えば
+      「静止時は最低これだけ光り、ホバー時はここまで強くなる」を1行で書ける。
+    </p>
+
+<pre><code><span class="c-prop">opacity</span>: <span class="c-val">calc(max(var(--rest), var(--o)) * var(--shine-opacity) * .85)</span>;
+<span class="c-com">/*          ↑ 静止時の下限   ↑ 追従値    ↑ レアリティで変わる係数 */</span></code></pre>
+
+    <p>
+      レアリティは <code>--shine-opacity</code> を、タイプは <code>--frame-*</code> と
+      <code>--face-*</code> を書き換える。<strong>同じ詳細度のセレクタを記述順で競わせる</strong>ことで、
+      「色はタイプが勝ち、その上を ex が上書きする」優先順位を作っている。
+    </p>
+
+<pre><code><span class="c-sel">.card[data-rarity='ultra']</span> { <span class="c-prop">--shine-opacity</span>: <span class="c-val">.78</span>; }  <span class="c-com">/* 光り方だけ */</span>
+<span class="c-sel">.card[data-type='fire']</span>     { <span class="c-prop">--frame-b</span>: <span class="c-val">#c2461c</span>; }   <span class="c-com">/* 後に書いた方が勝つ */</span>
+<span class="c-sel">.card[data-ex='true']</span>       { <span class="c-prop">--frame-b</span>: <span class="c-val">#a8781f</span>; }   <span class="c-com">/* さらに上書き */</span></code></pre>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== isolation -->
+  <section>
+    <h2>⑥ 合成の閉じ込め — isolation: isolate</h2>
+    <p>
+      <code>mix-blend-mode</code> は既定では<strong>ページ全体の背景まで巻き込んで</strong>混ざる。
+      カードの外の背景色が変わると箔の見え方まで変わってしまうし、
+      背景に敷いたグラデーションと干渉して意図しない色になる。
+    </p>
+    <p>
+      <code>.card</code> に <code>isolation: isolate</code> を置くと、そこが合成の境界になり、
+      混ざる相手はカード内部の層だけに限定される。
+      <strong>1行だが、これが無いと成立しない。</strong>
+    </p>
+    <p class="note">
+      <code>overflow: hidden</code> や <code>filter</code>、<code>transform</code> も
+      同じく合成コンテキストを作る。意図せず効果が閉じ込められて「なぜか混ざらない」ときは、
+      たいてい祖先のどれかがこれらを持っている。
+    </p>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== 静止時 -->
+  <section>
+    <h2>⑦ 静止時のゆらぎ</h2>
+    <p>
+      ホバーしないと何も起きない作りだと、初見やスクリーンショットでただの商品写真に見える。
+      そこで<strong>触っていないときだけ</strong>、背景位置をゆっくり往復させている。
+    </p>
+
+<pre><code><span class="c-sel">.card:not(.is-active) .card__shine</span> {
+  <span class="c-prop">animation</span>: <span class="c-val">shine-drift 9s ease-in-out infinite alternate</span>;
+}
+<span class="c-sel">@keyframes shine-drift</span> {
+  from { <span class="c-prop">background-position</span>: <span class="c-val">12% 18%</span>; }
+  to   { <span class="c-prop">background-position</span>: <span class="c-val">88% 82%</span>; }
+}</code></pre>
+
+    <p>
+      <code>:not(.is-active)</code> で限定しているのは、追従中にアニメーションが
+      <code>background-position</code> を奪い合うのを防ぐため。
+      <code>alternate</code> により終端で巻き戻らず、折り返して自然に見える。
+    </p>
+  </section>
+
+  <hr class="spectrum" />
+
+  <!-- ================================================== その他 -->
+  <section>
+    <h2>支えている細かい指定</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>プロパティ</th><th>効かせている場所</th></tr></thead>
+        <tbody>
+          <tr><td>aspect-ratio: 63/88</td><td>実物のカードの縦横比。幅が変わっても形が崩れない</td></tr>
+          <tr><td>container-type</td><td>文字サイズを <code>cqw</code>（カード幅基準）で決め、縮小時も比率を保つ</td></tr>
+          <tr><td>border-image</td><td>画像枠の縁取りにグラデーションを流す。<code>border-color</code> では単色しか置けない</td></tr>
+          <tr><td>border-radius: 4.5% / 3.2%</td><td>縦横で別々の半径。実物の角丸は真円ではない</td></tr>
+          <tr><td>object-fit: cover</td><td>正方形の商品写真を、カード比率の枠へ切り抜いて充填</td></tr>
+          <tr><td>flex: 1 / min-height: 0</td><td>画像枠に「余った高さを全部渡す」。わざの行数が商品ごとに変わっても崩れない</td></tr>
+          <tr><td>inset box-shadow</td><td>全面絵柄の下端にタイプ色を差す。<code>color-mix</code> 不使用で古い環境でも安全</td></tr>
+          <tr><td>prefers-reduced-motion</td><td>回転とアニメーションを停止。効果自体は残す</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <hr class="spectrum" />
+
+  <footer>
+    <p>
+      効果の考え方は
+      <a href="https://github.com/simeydotme/pokemon-cards-css" target="_blank" rel="noopener noreferrer">simeydotme/pokemon-cards-css</a>
+      （GPL-3.0）を参考にしている。2層構成・タイプ別配色・商品写真への適応は本プロジェクト独自の実装。
+    </p>
+    <p>このページのカードは card.css と同じ指定で描画しており、画像アセットは使っていない。</p>
+  </footer>
+
+</div>
+
+<script>
+  // ---- ライブカード: pointermove で変数を書き、実測値を表示する ----
+  (function () {
+    var card = document.getElementById('live');
+    var ro = document.getElementById('ro').querySelectorAll('b');
+    var frame = 0, pending = null;
+
+    function set(k, v) { card.style.setProperty(k, v); }
+
+    function apply() {
+      frame = 0;
+      if (!pending) return;
+      var px = pending.px, py = pending.py;
+      var cx = px - 0.5, cy = py - 0.5;
+      var mx = (px * 100).toFixed(1) + '%';
+      var my = (py * 100).toFixed(1) + '%';
+      var ry = (cx * 32).toFixed(1) + 'deg';
+      var rx = (-cy * 32).toFixed(1) + 'deg';
+      set('--mx', mx); set('--my', my);
+      set('--ry', ry); set('--rx', rx);
+      ro[0].textContent = mx; ro[1].textContent = my;
+      ro[2].textContent = rx; ro[3].textContent = ry;
+    }
+
+    function clamp(v) { return v < 0 ? 0 : v > 1 ? 1 : v; }
+
+    card.addEventListener('pointermove', function (e) {
+      var r = card.getBoundingClientRect();
+      if (!r.width) return;
+      pending = { px: clamp((e.clientX - r.left) / r.width), py: clamp((e.clientY - r.top) / r.height) };
+      if (!frame) frame = requestAnimationFrame(apply);
+    });
+
+    card.addEventListener('pointerenter', function () {
+      card.classList.add('on');
+      set('--o', '1');
+      ro[4].textContent = '1';
+    });
+
+    card.addEventListener('pointerleave', function () {
+      card.classList.remove('on');
+      set('--o', '0'); set('--rx', '0deg'); set('--ry', '0deg');
+      set('--mx', '50%'); set('--my', '50%');
+      ro[0].textContent = '50%'; ro[1].textContent = '50%';
+      ro[2].textContent = '0deg'; ro[3].textContent = '0deg'; ro[4].textContent = '0';
+      if (frame) { cancelAnimationFrame(frame); frame = 0; }
+      pending = null;
+    });
+  })();
+
+  // ---- 分解図のスライダー ----
+  (function () {
+    var slider = document.getElementById('ex');
+    var stack = document.getElementById('stack');
+    slider.addEventListener('input', function () {
+      stack.style.setProperty('--explode', slider.value);
+    });
+  })();
+</script>
+</body>
+</html>

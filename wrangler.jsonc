@@ -11,6 +11,17 @@
     "binding": "ASSETS"
   },
 
+  // docs/ 配下の HTML を「文字列」としてバンドルに取り込む設定。
+  // これにより本体を docs/ に置いたまま、Worker から配信できる（src/app.ts 参照）。
+  // public/ に複製を置かずに済むので、ファイルの実体は常に1つ。
+  "rules": [
+    {
+      "type": "Text",
+      "globs": ["**/*.html"],
+      "fallthrough": false
+    }
+  ],
+
   "observability": {
     "enabled": true
   }
