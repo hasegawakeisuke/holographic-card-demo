@@ -412,7 +412,7 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* よわ点 / ていこう / にげる */
+/* 弱点 / ていこう / にげる */
 .card__stats {
   display: flex;
   justify-content: space-between;
