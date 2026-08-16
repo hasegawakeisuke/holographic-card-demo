@@ -22,12 +22,20 @@
   --o: 0;      /* ポインタ追従の強さ。ホバー時に 1 へ */
   --rest: 0.4; /* 静止時のホロの強さ。0 にするとただの写真に見えてしまう */
 
-  /* レアリティで上書きされる */
+  /*
+   * 役割分担:
+   *   タイプ    → 色（枠 --frame-*、カード面 --face-*）
+   *   レアリティ → 光り方（--shine-opacity / --glare-opacity）
+   * 実物のカードもタイプで地色が決まり、レアリティは箔の強さで表れるため。
+   */
   --shine-opacity: 0.55;
   --glare-opacity: 0.7;
   --frame-a: #d8d8dd;
   --frame-b: #8f8f99;
   --frame-c: #f2f2f5;
+  --face-a: #fdfdff;
+  --face-b: #eef0f6;
+  --face-c: #e2e5ee;
 
   position: relative;
   width: 100%;
@@ -43,44 +51,125 @@
 
 /* ---------------------------------------------------------- レアリティ */
 
-/* 価格帯からレアリティを決める。高いほど派手に光る */
+/* 価格帯からレアリティを決める。高いほど派手に光る（色には関与しない） */
 .card[data-rarity='common'] {
   --shine-opacity: 0.28;
   --glare-opacity: 0.5;
-  --frame-a: #dcdce2;
-  --frame-b: #9a9aa4;
-  --frame-c: #f4f4f7;
 }
 .card[data-rarity='rare'] {
   --shine-opacity: 0.45;
   --glare-opacity: 0.62;
-  --frame-a: #cfe0f5;
-  --frame-b: #6f8fbe;
-  --frame-c: #eef5ff;
 }
 .card[data-rarity='holo'] {
   --shine-opacity: 0.62;
   --glare-opacity: 0.72;
-  --frame-a: #f0dfa8;
-  --frame-b: #b99334;
-  --frame-c: #fff8e0;
 }
 .card[data-rarity='ultra'] {
   --shine-opacity: 0.78;
   --glare-opacity: 0.85;
-  --frame-a: #e8cfff;
-  --frame-b: #8a4fd6;
-  --frame-c: #f9f0ff;
 }
 .card[data-rarity='secret'] {
   --shine-opacity: 0.95;
   --glare-opacity: 1;
-  --frame-a: #ffd9ec;
-  --frame-b: #d4408a;
-  --frame-c: #fff0f7;
 }
 
-/* ex カードは枠を金一色にして特別感を出す。レアリティの枠色より優先 */
+/* ------------------------------------------------------------ タイプ別の色 */
+
+/*
+ * 実物のカードと同じく、タイプでカードの地色が変わる。
+ * レアリティ指定より後に置くことで、色はタイプが勝つようにしている
+ * （同じ詳細度なので記述順で決まる）。
+ */
+.card[data-type='grass'] {
+  --frame-a: #9ecb6d;
+  --frame-b: #4d8b2f;
+  --frame-c: #e2f2ce;
+  --face-a: #f4faea;
+  --face-b: #e2f0cd;
+  --face-c: #cde3ac;
+}
+.card[data-type='fire'] {
+  --frame-a: #f2a074;
+  --frame-b: #c2461c;
+  --frame-c: #ffe4d3;
+  --face-a: #fff3ec;
+  --face-b: #fde0d0;
+  --face-c: #f7c3a8;
+}
+.card[data-type='water'] {
+  --frame-a: #82c2ea;
+  --frame-b: #1f74b3;
+  --frame-c: #dceffb;
+  --face-a: #eff8fe;
+  --face-b: #daedfa;
+  --face-c: #b6d9f2;
+}
+.card[data-type='lightning'] {
+  --frame-a: #f6d977;
+  --frame-b: #bd9317;
+  --frame-c: #fdf3d0;
+  --face-a: #fffbeb;
+  --face-b: #fcf2cf;
+  --face-c: #f6e3a4;
+}
+.card[data-type='psychic'] {
+  --frame-a: #c79ade;
+  --frame-b: #7a3ea3;
+  --frame-c: #efe0f7;
+  --face-a: #faf3fd;
+  --face-b: #eee0f6;
+  --face-c: #dcc2ec;
+}
+.card[data-type='fighting'] {
+  --frame-a: #e0a878;
+  --frame-b: #99521f;
+  --frame-c: #f7e5d1;
+  --face-a: #fdf4ea;
+  --face-b: #f6e6d3;
+  --face-c: #e8cbaa;
+}
+.card[data-type='darkness'] {
+  --frame-a: #7c8798;
+  --frame-b: #2c3545;
+  --frame-c: #ccd4de;
+  --face-a: #eef1f5;
+  --face-b: #dae0e9;
+  --face-c: #bcc5d2;
+}
+.card[data-type='metal'] {
+  --frame-a: #b9c2cc;
+  --frame-b: #5f6975;
+  --frame-c: #e8ecf0;
+  --face-a: #f6f8fa;
+  --face-b: #e6eaef;
+  --face-c: #ccd3db;
+}
+.card[data-type='fairy'] {
+  --frame-a: #f0a3c8;
+  --frame-b: #b54680;
+  --frame-c: #fbdcec;
+  --face-a: #fef3f8;
+  --face-b: #fadeeb;
+  --face-c: #f2bed7;
+}
+.card[data-type='dragon'] {
+  --frame-a: #d9bd6a;
+  --frame-b: #8c6f20;
+  --frame-c: #f5ead0;
+  --face-a: #fdf9ee;
+  --face-b: #f3ead2;
+  --face-c: #e2d3a5;
+}
+.card[data-type='colorless'] {
+  --frame-a: #cfcac0;
+  --frame-b: #7c776c;
+  --frame-c: #f0eee9;
+  --face-a: #fbfaf8;
+  --face-b: #efede8;
+  --face-c: #dcd8d0;
+}
+
+/* ex カードは枠を金一色にして特別感を出す。タイプの色より優先 */
 .card[data-ex='true'] {
   --frame-a: #f7e3a0;
   --frame-b: #a8781f;
@@ -121,6 +210,13 @@
     rgba(0, 0, 0, 0.5) 72%,
     rgba(0, 0, 0, 0.72) 100%
   );
+  /*
+   * 全面絵柄はカード面の地色が見えないので、下端にタイプ色を差し込んで
+   * どのタイプのカードか分かるようにする。
+   * color-mix を使わず inset box-shadow のぼかしで色を減衰させている
+   * （対応していない環境で背景ごと無効化されるのを避けるため）。
+   */
+  box-shadow: inset 0 -7em 6em -3.5em var(--frame-b);
 }
 
 .card[data-layout='full-art'] .card__face > *:not(.card__window) {
@@ -205,7 +301,7 @@
   width: 100%;
   height: 100%;
   border-radius: 2.5% / 1.8%;
-  background: linear-gradient(170deg, #fdfdff, #eef0f6 55%, #e2e5ee);
+  background: linear-gradient(170deg, var(--face-a), var(--face-b) 55%, var(--face-c));
   display: flex;
   flex-direction: column;
   padding: 5% 6%;
