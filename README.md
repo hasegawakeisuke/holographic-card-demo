@@ -3,6 +3,8 @@
 JANコードを入力すると、[ハンズネットストア](https://hands.net/)の商品をポケモンカード風の
 ホログラフィックカードとして表示するデモ。
 
+ホロ効果そのものの実装解説は [docs/holographic-css.md](docs/holographic-css.md) にある。
+
 ## 動かす
 
 Node.js 22 以上が必要（`.node-version` で 22.23.2 に固定済み）。
@@ -38,6 +40,8 @@ src/
   hands.ts         商品情報の抽出（純関数・依存ゼロ）
   types.ts         API 契約
 wrangler.jsonc     Workers 設定（静的アセット + Worker）
+docs/
+  holographic-css.md  ホロ効果の技術解説（3D変形・合成モード・CSS変数）
 ```
 
 ### 設計方針
