@@ -1,0 +1,17 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "pokecard-hands",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-01",
+
+  // 静的アセット（public/）を配信。アセットに一致しないリクエストだけ Worker が処理する。
+  // not_found_handling は既定の "none" のまま = /api/* が Worker に届く。
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

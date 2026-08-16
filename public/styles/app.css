@@ -1,0 +1,234 @@
+/* ページ全体のレイアウト。カード自体のスタイルは card.css */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0d1017;
+  --bg-2: #161c28;
+  --fg: #e8ecf4;
+  --muted: #98a2b5;
+  --accent: #ffd45e;
+  --danger: #ff8a8a;
+  --line: rgba(255, 255, 255, 0.12);
+  color-scheme: dark;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP',
+    'Yu Gothic UI', sans-serif;
+  color: var(--fg);
+  background:
+    radial-gradient(1000px 600px at 12% -8%, rgba(120, 148, 255, 0.22), transparent 60%),
+    radial-gradient(900px 620px at 88% 4%, rgba(216, 117, 255, 0.18), transparent 62%),
+    linear-gradient(180deg, var(--bg), var(--bg-2));
+  background-attachment: fixed;
+  min-height: 100vh;
+  padding: clamp(1.5rem, 5vw, 3rem) 1rem 4rem;
+}
+
+.layout {
+  max-width: 940px;
+  margin-inline: auto;
+  display: grid;
+  gap: clamp(1.75rem, 4vw, 2.75rem);
+}
+
+/* ---------------------------------------------------------------- 見出し */
+
+.site-header {
+  text-align: center;
+}
+
+.site-title {
+  margin: 0 0 0.4rem;
+  font-size: clamp(1.3rem, 4.6vw, 1.9rem);
+  letter-spacing: 0.02em;
+  background: linear-gradient(100deg, #fff, var(--accent) 45%, #a8c6ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.site-lead {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.7;
+}
+
+/* ------------------------------------------------------------------ 入力 */
+
+.finder {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.finder__field {
+  flex: 1 1 22rem;
+  max-width: 26rem;
+  min-width: 0;
+}
+
+.finder input {
+  width: 100%;
+  padding: 0.85rem 1rem;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.finder input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 212, 94, 0.18);
+}
+
+.finder input::placeholder {
+  color: rgba(232, 236, 244, 0.32);
+  letter-spacing: 0.06em;
+}
+
+.finder button {
+  flex: none;
+  padding: 0.85rem 1.6rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1400;
+  background: linear-gradient(120deg, var(--accent), #ffb84e);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.finder button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.06);
+}
+
+.finder button:disabled {
+  opacity: 0.55;
+  cursor: progress;
+}
+
+.finder__hint {
+  flex-basis: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  min-height: 1.4em;
+  margin: 0;
+  color: var(--muted);
+}
+
+.finder__hint[data-tone='error'] {
+  color: var(--danger);
+}
+
+.finder__hint[data-tone='warn'] {
+  color: var(--accent);
+}
+
+.samples {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.samples button {
+  margin: 0 0.15rem;
+  padding: 0.25rem 0.6rem;
+  font: inherit;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.samples button:hover {
+  border-color: var(--accent);
+}
+
+/* ------------------------------------------------------------------ 結果 */
+
+.stage {
+  display: grid;
+  justify-items: center;
+}
+
+.meta {
+  margin-top: 1.5rem;
+  max-width: 30rem;
+  width: 100%;
+  font-size: 0.82rem;
+  color: var(--muted);
+  border-top: 1px solid var(--line);
+  padding-top: 1rem;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.meta:empty {
+  display: none;
+}
+
+.meta__row {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.meta__row dt {
+  color: rgba(152, 162, 181, 0.8);
+}
+
+.meta__row dd {
+  margin: 0;
+  text-align: right;
+  color: var(--fg);
+}
+
+.meta a {
+  color: var(--accent);
+}
+
+/* ---------------------------------------------------------------- 脚注 */
+
+.site-footer {
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.9;
+  color: rgba(152, 162, 181, 0.75);
+}
+
+.site-footer a {
+  color: rgba(255, 212, 94, 0.85);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

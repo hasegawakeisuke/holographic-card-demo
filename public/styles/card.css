@@ -1,0 +1,423 @@
+/*
+ * ホログラフィックカード
+ *
+ * 効果の考え方は simeydotme/pokemon-cards-css (GPL-3.0) を参考にしている。
+ * https://github.com/simeydotme/pokemon-cards-css
+ * 本プロジェクトも GPL-3.0 で配布すること。
+ *
+ * 本家との違い:
+ *  ポケカ画像と異なり商品写真は「白背景・被写体が中央・比率がバラバラ」なので、
+ *  color-dodge の単層だと白地で完全に飛んでしまう。そのため
+ *  multiply（白地に色を乗せる）と color-dodge（暗部を光らせる）の
+ *  2層を重ねて、どんな写真でも虹色が出るようにしている。
+ */
+
+.card {
+  /* JS が pointermove で書き換える変数群 */
+  --mx: 50%;   /* ポインタ X（カード内 %） */
+  --my: 50%;   /* ポインタ Y（カード内 %） */
+  --rx: 0deg;  /* X 軸回転 */
+  --ry: 0deg;  /* Y 軸回転 */
+  --hyp: 0;    /* 中心からの距離 0〜1。効果の強さ */
+  --o: 0;      /* ポインタ追従の強さ。ホバー時に 1 へ */
+  --rest: 0.4; /* 静止時のホロの強さ。0 にするとただの写真に見えてしまう */
+
+  /* レアリティで上書きされる */
+  --shine-opacity: 0.55;
+  --glare-opacity: 0.7;
+  --frame-a: #d8d8dd;
+  --frame-b: #8f8f99;
+  --frame-c: #f2f2f5;
+
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 63 / 88;
+  margin-inline: auto;
+  perspective: 1400px;
+  isolation: isolate;
+  /* 内部の文字サイズを cqw（カード幅基準）で決めるためのコンテナ指定。
+     これによりカードを縮めても各要素の比率が崩れない */
+  container-type: inline-size;
+}
+
+/* ---------------------------------------------------------- レアリティ */
+
+/* 価格帯からレアリティを決める。高いほど派手に光る */
+.card[data-rarity='common'] {
+  --shine-opacity: 0.28;
+  --glare-opacity: 0.5;
+  --frame-a: #dcdce2;
+  --frame-b: #9a9aa4;
+  --frame-c: #f4f4f7;
+}
+.card[data-rarity='rare'] {
+  --shine-opacity: 0.45;
+  --glare-opacity: 0.62;
+  --frame-a: #cfe0f5;
+  --frame-b: #6f8fbe;
+  --frame-c: #eef5ff;
+}
+.card[data-rarity='holo'] {
+  --shine-opacity: 0.62;
+  --glare-opacity: 0.72;
+  --frame-a: #f0dfa8;
+  --frame-b: #b99334;
+  --frame-c: #fff8e0;
+}
+.card[data-rarity='ultra'] {
+  --shine-opacity: 0.78;
+  --glare-opacity: 0.85;
+  --frame-a: #e8cfff;
+  --frame-b: #8a4fd6;
+  --frame-c: #f9f0ff;
+}
+.card[data-rarity='secret'] {
+  --shine-opacity: 0.95;
+  --glare-opacity: 1;
+  --frame-a: #ffd9ec;
+  --frame-b: #d4408a;
+  --frame-c: #fff0f7;
+}
+
+/* 在庫切れは色を落とす */
+.card[data-availability='out_of_stock'] .card__inner {
+  filter: grayscale(0.75) brightness(0.92);
+}
+
+/* ------------------------------------------------------------ 本体・枠 */
+
+.card__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 4.5% / 3.2%;
+  transform-style: preserve-3d;
+  transform: rotateX(var(--rx)) rotateY(var(--ry));
+  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.55);
+  background: linear-gradient(150deg, var(--frame-a), var(--frame-b) 45%, var(--frame-c));
+  padding: 4.2%;
+  overflow: hidden;
+  will-change: transform;
+}
+
+/* ポインタ追従中は transition を切って遅延をなくす */
+.card.is-active .card__inner {
+  transition: box-shadow 0.2s ease;
+  box-shadow: 0 26px 50px -18px rgba(0, 0, 0, 0.65);
+}
+
+.card__face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 2.5% / 1.8%;
+  background: linear-gradient(170deg, #fdfdff, #eef0f6 55%, #e2e5ee);
+  display: flex;
+  flex-direction: column;
+  padding: 5% 6%;
+  gap: 2.5%;
+  overflow: hidden;
+}
+
+/* -------------------------------------------------------------- 見出し */
+
+.card__header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5em;
+}
+
+.card__name {
+  font-size: clamp(0.72rem, 3.4cqw, 0.98rem);
+  font-weight: 700;
+  line-height: 1.25;
+  margin: 0;
+  /* 商品名は長いので 2 行で打ち切る */
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: #14161c;
+}
+
+.card__hp {
+  flex: none;
+  font-weight: 800;
+  font-size: clamp(0.62rem, 2.6cqw, 0.82rem);
+  color: #c0392b;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.card__hp small {
+  font-size: 0.62em;
+  margin-right: 0.15em;
+  vertical-align: 0.15em;
+}
+
+/* ---------------------------------------------------------- 画像ウィンドウ */
+
+.card__window {
+  position: relative;
+  flex: none;
+  aspect-ratio: 1 / 1;
+  border: 0.35em solid;
+  border-image: linear-gradient(140deg, var(--frame-b), var(--frame-c), var(--frame-b)) 1;
+  background: #fff;
+  overflow: hidden;
+}
+
+.card__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  /* 白飛びしすぎないよう気持ち沈める */
+  filter: saturate(1.05) contrast(1.03);
+}
+
+.card__image[hidden] {
+  display: none;
+}
+
+/* ------------------------------------------------------------ 情報エリア */
+
+.card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25em;
+  font-size: clamp(0.42rem, 1.9cqw, 0.58rem);
+}
+
+.card__badge {
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 999px;
+  padding: 0.12em 0.6em;
+  background: rgba(255, 255, 255, 0.6);
+  color: #2b2f38;
+  white-space: nowrap;
+}
+
+.card__badge--type {
+  background: linear-gradient(120deg, var(--frame-b), var(--frame-a));
+  border-color: transparent;
+  color: #fff;
+  font-weight: 700;
+}
+
+.card__flavor {
+  flex: 1;
+  min-height: 0;
+  margin: 0;
+  padding: 0.5em 0.7em;
+  border-top: 1px solid rgba(0, 0, 0, 0.18);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.18);
+  background: rgba(255, 255, 255, 0.45);
+  font-size: clamp(0.5rem, 2.3cqw, 0.68rem);
+  font-style: italic;
+  line-height: 1.5;
+  color: #2f343d;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+}
+
+.card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5em;
+  font-size: clamp(0.46rem, 2cqw, 0.62rem);
+  color: #3a3f49;
+}
+
+.card__stars {
+  color: #c8940c;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.card__jan {
+  font-variant-numeric: tabular-nums;
+  opacity: 0.75;
+}
+
+/* -------------------------------------------------------- ホロ効果レイヤ */
+
+.card__shine,
+.card__glare {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+  z-index: 2;
+}
+
+/*
+ * 静止時もゆっくり虹色が流れるようにしておく。ホバーしないと何も起きない
+ * 作りだと、スクリーンショットや初見でただの商品写真に見えてしまうため。
+ */
+.card:not(.is-active) .card__shine {
+  animation: shine-drift 9s ease-in-out infinite alternate;
+}
+
+@keyframes shine-drift {
+  from {
+    background-position: 12% 18%;
+  }
+  to {
+    background-position: 88% 82%;
+  }
+}
+
+/*
+ * 1層目: multiply。白い背景の商品写真に虹色を「乗せる」役。
+ * これが無いと白物家電や白背景の商品でホロが一切見えない。
+ */
+.card__shine {
+  background-image: repeating-linear-gradient(
+    -22deg,
+    rgb(255, 119, 115) 4%,
+    rgba(255, 237, 95, 1) 10%,
+    rgba(168, 255, 95, 1) 16%,
+    rgba(131, 255, 247, 1) 22%,
+    rgba(120, 148, 255, 1) 28%,
+    rgb(216, 117, 255) 34%,
+    rgb(255, 119, 115) 40%
+  );
+  background-size: 200% 200%;
+  background-position: calc(var(--mx) * 1.2) calc(var(--my) * 1.2);
+  mix-blend-mode: multiply;
+  opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.85);
+  filter: saturate(1.4) contrast(0.9);
+}
+
+/*
+ * 2層目: color-dodge。暗い部分（枠・被写体の影）を発光させる役。
+ */
+.card__shine--dodge {
+  background-image: repeating-linear-gradient(
+    98deg,
+    rgba(255, 119, 115, 0.9) 0%,
+    rgba(255, 237, 95, 0.9) 8%,
+    rgba(168, 255, 95, 0.9) 16%,
+    rgba(131, 255, 247, 0.9) 24%,
+    rgba(120, 148, 255, 0.9) 32%,
+    rgba(216, 117, 255, 0.9) 40%,
+    rgba(255, 119, 115, 0.9) 48%
+  );
+  background-size: 160% 160%;
+  background-position: calc(100% - var(--mx)) calc(100% - var(--my));
+  mix-blend-mode: color-dodge;
+  opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.55);
+  filter: brightness(0.85) contrast(1.6);
+}
+
+/* ポインタ位置の光沢 */
+.card__glare {
+  background-image: radial-gradient(
+    farthest-corner circle at var(--mx) var(--my),
+    rgba(255, 255, 255, 0.85) 8%,
+    rgba(255, 255, 255, 0.5) 20%,
+    rgba(0, 0, 0, 0.35) 100%
+  );
+  mix-blend-mode: overlay;
+  opacity: calc(var(--o) * var(--glare-opacity));
+  z-index: 3;
+}
+
+/* --------------------------------------------------------- 空・読込状態 */
+
+.card__placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 2em;
+  font-size: 0.8rem;
+  line-height: 1.7;
+  color: #6b7280;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(255, 255, 255, 0.6) 0 10px,
+    rgba(236, 238, 244, 0.6) 10px 20px
+  );
+  z-index: 4;
+}
+
+/* .card__placeholder は display:grid を持つため、UA の [hidden] 規則に勝ってしまう。
+   明示的に打ち消さないとカードの上に残り続ける */
+.card__placeholder[hidden] {
+  display: none;
+}
+
+.card.is-loading .card__face {
+  animation: card-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes card-pulse {
+  50% {
+    opacity: 0.72;
+  }
+}
+
+/* ---------------------------------------------------------- サムネイル */
+
+.thumbs {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.1rem;
+}
+
+.thumbs:empty {
+  display: none;
+}
+
+.thumb {
+  width: 52px;
+  height: 52px;
+  padding: 0;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  background: #fff;
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.thumb:hover {
+  transform: translateY(-2px);
+}
+
+.thumb[aria-current='true'] {
+  border-color: #ffd45e;
+}
+
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* ------------------------------------------------------------ 動き軽減 */
+
+@media (prefers-reduced-motion: reduce) {
+  .card__inner {
+    transform: none !important;
+    transition: none;
+  }
+  .card.is-loading .card__face,
+  .card:not(.is-active) .card__shine {
+    animation: none;
+  }
+}

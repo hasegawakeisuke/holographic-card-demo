@@ -1,0 +1,22 @@
+{
+  "name": "pokecard-hands",
+  "version": "0.1.0",
+  "private": true,
+  "description": "JANコードからハンズネットストアの商品画像を取得し、ホログラフィックなポケカ風カードとして表示する",
+  "license": "GPL-3.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "login": "wrangler login",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "hono": "^4.6.14"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260811.1",
+    "typescript": "^5.7.2",
+    "wrangler": "^4.0.0"
+  }
+}

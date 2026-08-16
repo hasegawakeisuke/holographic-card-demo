@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JANコードでホロカードをつくる</title>
+    <meta
+      name="description"
+      content="JANコードを入力すると、ハンズネットストアの商品画像をポケモンカード風のホログラフィックカードとして表示します。"
+    />
+    <link rel="stylesheet" href="/styles/app.css" />
+    <link rel="stylesheet" href="/styles/card.css" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><text y='14' font-size='14'>✨</text></svg>"
+    />
+  </head>
+  <body>
+    <div class="layout">
+      <header class="site-header">
+        <h1 class="site-title">JAN → ホログラフィックカード</h1>
+        <p class="site-lead">
+          JANコードを入力すると、ハンズネットストアの商品をポケモンカード風に加工して表示します。<br />
+          カードにマウスを乗せる（スマホならなぞる）と光ります。
+        </p>
+      </header>
+
+      <form class="finder" id="finder" novalidate>
+        <div class="finder__field">
+          <label class="visually-hidden" for="jan">JANコード</label>
+          <input
+            id="jan"
+            name="jan"
+            type="text"
+            inputmode="numeric"
+            autocomplete="off"
+            maxlength="20"
+            placeholder="4549917237131"
+            aria-describedby="hint"
+          />
+        </div>
+        <button type="submit" id="submit">カード生成</button>
+        <p class="finder__hint" id="hint" role="status"></p>
+      </form>
+
+      <p class="samples">
+        お試し（価格帯でレアリティが変わります）:
+        <button type="button" data-jan="4549917237131">980円 / common</button>
+        <button type="button" data-jan="4549917237698">3,800円 / holo</button>
+        <button type="button" data-jan="4580145412532">27,940円 / ultra</button>
+      </p>
+
+      <main class="stage">
+        <!-- カード本体。JS は中身のテキストと CSS 変数を差し替えるだけ -->
+        <div class="card" id="card" data-rarity="common">
+          <div class="card__inner">
+            <div class="card__face">
+              <div class="card__header">
+                <h2 class="card__name" id="c-name">カードを生成してください</h2>
+                <span class="card__hp" id="c-hp"></span>
+              </div>
+
+              <div class="card__window">
+                <img class="card__image" id="c-image" alt="" hidden />
+              </div>
+
+              <div class="card__badges" id="c-badges"></div>
+
+              <p class="card__flavor" id="c-flavor"></p>
+
+              <div class="card__footer">
+                <span class="card__stars" id="c-stars"></span>
+                <span class="card__jan" id="c-jan"></span>
+              </div>
+            </div>
+
+            <!-- ホロ効果。順序に意味がある（multiply → color-dodge → glare） -->
+            <div class="card__shine"></div>
+            <div class="card__shine card__shine--dodge"></div>
+            <div class="card__glare"></div>
+
+            <div class="card__placeholder" id="c-placeholder">
+              JANコードを入力すると<br />ここにカードが表示されます
+            </div>
+          </div>
+        </div>
+
+        <div class="thumbs" id="thumbs"></div>
+
+        <dl class="meta" id="meta"></dl>
+      </main>
+
+      <footer class="site-footer">
+        <p>
+          商品情報・画像の著作権は
+          <a href="https://hands.net/" target="_blank" rel="noopener noreferrer">ハンズ</a>
+          および各メーカーに帰属します。個人利用・デモ目的のページです。<br />
+          ホロ効果は
+          <a
+            href="https://github.com/simeydotme/pokemon-cards-css"
+            target="_blank"
+            rel="noopener noreferrer"
+            >pokemon-cards-css</a
+          >
+          (GPL-3.0) を参考にしています。
+        </p>
+      </footer>
+    </div>
+
+    <script type="module" src="/js/main.js"></script>
+  </body>
+</html>
