@@ -80,6 +80,97 @@
   --frame-c: #fff0f7;
 }
 
+/* ex カードは枠を金一色にして特別感を出す。レアリティの枠色より優先 */
+.card[data-ex='true'] {
+  --frame-a: #f7e3a0;
+  --frame-b: #a8781f;
+  --frame-c: #fff6d4;
+}
+
+/* --------------------------------------------------------- 全面絵柄レイアウト */
+
+/*
+ * data-layout="full-art" では画像をカード全面に敷き、文字を上に重ねる。
+ * マークアップは通常レイアウトと同一で、CSS だけで配置を変えている。
+ */
+.card[data-layout='full-art'] .card__face {
+  background: none;
+}
+
+.card[data-layout='full-art'] .card__window {
+  position: absolute;
+  inset: 0;
+  aspect-ratio: auto;
+  border: none;
+  z-index: 0;
+}
+
+/* 白背景の商品写真でも文字が読めるよう、上下に暗幕を敷く */
+.card[data-layout='full-art'] .card__face::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* 商品が見えなくなるので、文字が載る上端と下端だけを暗くする */
+  background: linear-gradient(
+    180deg,
+    rgba(0, 0, 0, 0.55) 0%,
+    rgba(0, 0, 0, 0.08) 16%,
+    rgba(0, 0, 0, 0) 40%,
+    rgba(0, 0, 0, 0) 52%,
+    rgba(0, 0, 0, 0.5) 72%,
+    rgba(0, 0, 0, 0.72) 100%
+  );
+}
+
+.card[data-layout='full-art'] .card__face > *:not(.card__window) {
+  position: relative;
+  z-index: 2;
+}
+
+/* ヘッダー以外を下端へ寄せる */
+.card[data-layout='full-art'] .card__badges {
+  margin-top: auto;
+}
+
+.card[data-layout='full-art'] .card__name,
+.card[data-layout='full-art'] .card__hp,
+.card[data-layout='full-art'] .card__attacks .attack__name,
+.card[data-layout='full-art'] .card__attacks .attack__damage,
+.card[data-layout='full-art'] .stat__value,
+.card[data-layout='full-art'] .card__flavor,
+.card[data-layout='full-art'] .card__footer {
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
+}
+
+.card[data-layout='full-art'] .stat,
+.card[data-layout='full-art'] .card__jan {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.card[data-layout='full-art'] .card__attacks,
+.card[data-layout='full-art'] .card__stats {
+  background: rgba(10, 12, 16, 0.5);
+  border-radius: 4px;
+  padding: 0.4em 0.55em;
+  border-top-color: rgba(255, 255, 255, 0.25);
+  border-bottom-color: rgba(255, 255, 255, 0.25);
+}
+
+.card[data-layout='full-art'] .card__flavor {
+  flex: none;
+  background: none;
+  border-color: rgba(255, 255, 255, 0.25);
+  -webkit-line-clamp: 2;
+}
+
+.card[data-layout='full-art'] .card__badge {
+  background: rgba(10, 12, 16, 0.55);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
 /* 在庫切れは色を落とす */
 .card[data-availability='out_of_stock'] .card__inner {
   filter: grayscale(0.75) brightness(0.92);
@@ -126,12 +217,27 @@
 
 .card__header {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5em;
+  align-items: center;
+  gap: 0.4em;
+}
+
+/* 進化段階。実物カードの左上表記にあたる */
+.card__stage {
+  flex: none;
+  align-self: flex-start;
+  font-size: clamp(0.36rem, 1.6cqw, 0.5rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 0.15em 0.45em;
+  border-radius: 3px;
+  background: rgba(0, 0, 0, 0.55);
+  color: #fff;
+  white-space: nowrap;
 }
 
 .card__name {
+  flex: 1;
+  min-width: 0;
   font-size: clamp(0.72rem, 3.4cqw, 0.98rem);
   font-weight: 700;
   line-height: 1.25;
@@ -142,6 +248,47 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
   color: #14161c;
+}
+
+/*
+ * ex 表記。商品名は 2 行で省略するため、::after で付けると一緒に切られてしまう。
+ * 独立した要素にして名前の隣に置く。
+ */
+.card__ex {
+  flex: none;
+  align-self: flex-start;
+  font-size: clamp(0.68rem, 3.2cqw, 0.95rem);
+  font-style: italic;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  background: linear-gradient(100deg, #9c6f1d, #f6dd8a 45%, #b9862b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.35));
+}
+
+.card__ex[hidden] {
+  display: none;
+}
+
+/* タイプ記号。実物と同じく右上に置く */
+.card__type {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9em;
+  height: 1.9em;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fff, #d6d8de 70%, #a9adb6);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.type-icon {
+  fill: var(--type-color, #b9b3a7);
+  display: block;
 }
 
 .card__hp {
@@ -161,10 +308,15 @@
 
 /* ---------------------------------------------------------- 画像ウィンドウ */
 
+/*
+ * 画像枠は「余った高さを全部もらう」可変サイズにしている。
+ * 固定の 1:1 にすると、わざ欄の行数が商品ごとに変わったときに
+ * 下の要素がカードからはみ出すため。object-fit: cover で切り抜く。
+ */
 .card__window {
   position: relative;
-  flex: none;
-  aspect-ratio: 1 / 1;
+  flex: 1;
+  min-height: 0;
   border: 0.35em solid;
   border-image: linear-gradient(140deg, var(--frame-b), var(--frame-c), var(--frame-b)) 1;
   background: #fff;
@@ -209,9 +361,114 @@
   font-weight: 700;
 }
 
-.card__flavor {
+/* ------------------------------------------------------------ わざ・数値欄 */
+
+.card__attacks {
+  display: grid;
+  gap: 0.3em;
+  padding: 0.35em 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.22);
+}
+
+.card__attacks:empty {
+  display: none;
+}
+
+.attack {
+  display: flex;
+  align-items: center;
+  gap: 0.45em;
+}
+
+.attack__cost {
+  flex: none;
+  display: inline-flex;
+  gap: 0.12em;
+}
+
+.attack__cost .type-icon {
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fff, #dcdee4 72%, #b0b4bc);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  padding: 1px;
+}
+
+.attack__name {
   flex: 1;
-  min-height: 0;
+  min-width: 0;
+  font-size: clamp(0.5rem, 2.3cqw, 0.7rem);
+  font-weight: 700;
+  color: #14161c;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.attack__damage {
+  flex: none;
+  font-size: clamp(0.62rem, 2.9cqw, 0.88rem);
+  font-weight: 900;
+  color: #14161c;
+  font-variant-numeric: tabular-nums;
+}
+
+/* よわ点 / ていこう / にげる */
+.card__stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.4em;
+  padding: 0.3em 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.22);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.22);
+  font-size: clamp(0.36rem, 1.7cqw, 0.5rem);
+}
+
+.card__stats:empty {
+  display: none;
+}
+
+.stat {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15em;
+  color: #3a3f49;
+}
+
+.stat__label {
+  letter-spacing: 0.04em;
+}
+
+.stat__value {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15em;
+  font-weight: 700;
+  color: #14161c;
+  /* エネルギー記号が縦に折り返さないようにする */
+  flex-wrap: nowrap;
+  white-space: nowrap;
+}
+
+.stat__value > span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
+  flex-wrap: nowrap;
+}
+
+.stat__value .type-icon {
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, #fff, #dcdee4 72%, #b0b4bc);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+  padding: 1px;
+}
+
+.card__flavor {
+  /* 高さは 2 行で固定。伸縮させると画像枠の取り分が読めなくなる */
+  flex: none;
   margin: 0;
   padding: 0.5em 0.7em;
   border-top: 1px solid rgba(0, 0, 0, 0.18);
@@ -223,7 +480,7 @@
   color: #2f343d;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 3;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
 

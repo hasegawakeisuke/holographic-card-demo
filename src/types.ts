@@ -32,8 +32,13 @@ export interface Goods {
   rating: Rating | null;
   /** 商品タグ（例: ["ネットで人気", "店舗で人気"]） */
   tags: string[];
-  /** パンくずのカテゴリ（先頭の "ハンズ" は除去済み） */
+  /** パンくずのカテゴリ名（先頭の "ハンズ" は除去済み。上位→下位の順） */
   categories: string[];
+  /**
+   * パンくずのカテゴリスラッグ（例: ["travel", "totebag"]）。
+   * 日本語名は表記ゆれがあるため、タイプ判定にはこちらを使う。
+   */
+  categorySlugs: string[];
   /** 獲得ポイント */
   point: number | null;
   /** 商品画像 URL。先頭がメイン画像 */

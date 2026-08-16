@@ -185,6 +185,92 @@ body {
   justify-items: center;
 }
 
+/* -------------------------------------------------------- カードの手動設定 */
+
+.controls {
+  margin-top: 1.6rem;
+  width: 100%;
+  max-width: 30rem;
+  padding: 1rem 1.1rem 1.1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.controls[hidden] {
+  display: none;
+}
+
+.controls__title {
+  margin: 0 0 0.8rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.controls__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
+  gap: 0.7rem;
+}
+
+.control {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.75rem;
+}
+
+.control__label {
+  color: var(--muted);
+}
+
+.control select {
+  width: 100%;
+  padding: 0.5rem 0.6rem;
+  font: inherit;
+  font-size: 0.8rem;
+  color: var(--fg);
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+.control select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.control--check {
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: end;
+  padding-bottom: 0.5rem;
+}
+
+.control--check input {
+  width: 1.05rem;
+  height: 1.05rem;
+  accent-color: var(--accent);
+}
+
+.controls__reset {
+  margin-top: 0.9rem;
+  padding: 0.4rem 0.9rem;
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--fg);
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.controls__reset:hover {
+  border-color: var(--accent);
+}
+
 .meta {
   margin-top: 1.5rem;
   max-width: 30rem;

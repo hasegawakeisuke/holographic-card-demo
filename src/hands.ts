@@ -179,14 +179,38 @@ function extractTags(html: string): string[] {
   return tags;
 }
 
+/**
+ * パンくずの範囲だけを切り出す。
+ * itemprop="name" はページ内の別ブロックにも現れるため、スコープを絞らないと
+ * 無関係なカテゴリが混ざる（実際に混ざっていた）。
+ */
+function breadcrumbScope(html: string): string {
+  const start = html.search(/id=["']modBreadcrumbs["']/i);
+  if (start < 0) return '';
+  const end = html.indexOf('</ol>', start);
+  return end < 0 ? html.slice(start, start + 2000) : html.slice(start, end);
+}
+
 function extractCategories(html: string): string[] {
+  const scope = breadcrumbScope(html);
   const names: string[] = [];
-  for (const m of html.matchAll(/<span[^>]*itemprop=["']name["'][^>]*>([\s\S]*?)<\/span>/gi)) {
+  for (const m of scope.matchAll(/<span[^>]*itemprop=["']name["'][^>]*>([\s\S]*?)<\/span>/gi)) {
     const t = text(m[1]);
     // 先頭の "ハンズ" はサイト名なのでカテゴリではない
     if (t && t !== 'ハンズ' && !names.includes(t)) names.push(t);
   }
   return names;
+}
+
+/** パンくずのリンクから /cate/{slug}/ を上位→下位の順に取り出す */
+function extractCategorySlugs(html: string): string[] {
+  const scope = breadcrumbScope(html);
+  const slugs: string[] = [];
+  for (const m of scope.matchAll(/href=["'][^"']*\/cate\/([a-z0-9-]+(?:\/[a-z0-9-]+)*)\/?["']/gi)) {
+    const leaf = m[1].split('/').filter(Boolean).at(-1);
+    if (leaf && !slugs.includes(leaf)) slugs.push(leaf);
+  }
+  return slugs;
 }
 
 function extractPoint(html: string): number | null {
@@ -226,6 +250,7 @@ export function extractGoods(html: string, jan: string, fetchedAt: string): Good
     rating: extractRating(html),
     tags: extractTags(html),
     categories: extractCategories(html),
+    categorySlugs: extractCategorySlugs(html),
     point: extractPoint(html),
     images: extractImages(html, jan),
     sourceUrl: productPageUrl(jan),

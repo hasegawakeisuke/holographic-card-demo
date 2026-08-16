@@ -73,19 +73,6 @@ function clamp01(v) {
   return v < 0 ? 0 : v > 1 ? 1 : v;
 }
 
-/**
- * 価格からレアリティを決める。高いほど派手に光る。
- * card.css 側の [data-rarity] と対応。
- */
-export function rarityFromPrice(price) {
-  if (price == null) return 'common';
-  if (price >= 30000) return 'secret';
-  if (price >= 10000) return 'ultra';
-  if (price >= 3000) return 'holo';
-  if (price >= 1000) return 'rare';
-  return 'common';
-}
-
 /** 評価値を★表現にする（4.7 → ★★★★☆） */
 export function starsFromRating(rating) {
   // レビュー0件の商品で「☆☆☆☆☆ 0.0 (0)」を出しても意味がないので何も表示しない

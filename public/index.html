@@ -53,13 +53,22 @@
       </p>
 
       <main class="stage">
-        <!-- カード本体。JS は中身のテキストと CSS 変数を差し替えるだけ -->
-        <div class="card" id="card" data-rarity="common">
+        <!-- カード本体。JS は中身のテキストと data 属性・CSS変数を差し替えるだけ -->
+        <div
+          class="card"
+          id="card"
+          data-rarity="common"
+          data-layout="regular"
+          data-type="colorless"
+        >
           <div class="card__inner">
             <div class="card__face">
               <div class="card__header">
+                <span class="card__stage" id="c-stage"></span>
                 <h2 class="card__name" id="c-name">カードを生成してください</h2>
+                <span class="card__ex" id="c-ex" hidden>ex</span>
                 <span class="card__hp" id="c-hp"></span>
+                <span class="card__type" id="c-type"></span>
               </div>
 
               <div class="card__window">
@@ -67,6 +76,10 @@
               </div>
 
               <div class="card__badges" id="c-badges"></div>
+
+              <div class="card__attacks" id="c-attacks"></div>
+
+              <div class="card__stats" id="c-stats"></div>
 
               <p class="card__flavor" id="c-flavor"></p>
 
@@ -88,6 +101,45 @@
         </div>
 
         <div class="thumbs" id="thumbs"></div>
+
+        <!--
+          カードの見た目の手動設定。既定は商品カテゴリと価格から自動で決まるが、
+          「自動」以外を選ぶとユーザーの指定が優先される。選択内容は URL に載るので
+          そのまま共有できる。
+        -->
+        <section class="controls" id="controls" hidden>
+          <h2 class="controls__title">カードの設定</h2>
+          <div class="controls__grid">
+            <label class="control">
+              <span class="control__label">タイプ</span>
+              <select id="ctl-type" data-param="type">
+                <option value="">自動（カテゴリから判定）</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span class="control__label">レアリティ</span>
+              <select id="ctl-rarity" data-param="rarity">
+                <option value="">自動（価格から判定）</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span class="control__label">レイアウト</span>
+              <select id="ctl-layout" data-param="layout">
+                <option value="">自動（UR以上は全面絵柄）</option>
+                <option value="regular">通常（枠あり）</option>
+                <option value="full-art">全面絵柄</option>
+              </select>
+            </label>
+
+            <label class="control control--check">
+              <input type="checkbox" id="ctl-ex" data-param="ex" />
+              <span class="control__label">ex カードにする</span>
+            </label>
+          </div>
+          <button type="button" class="controls__reset" id="ctl-reset">自動設定に戻す</button>
+        </section>
 
         <dl class="meta" id="meta"></dl>
       </main>
