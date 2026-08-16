@@ -7,13 +7,24 @@
 }
 
 :root {
-  --bg: #0d1017;
-  --bg-2: #161c28;
-  --fg: #e8ecf4;
-  --muted: #98a2b5;
-  --accent: #ffd45e;
-  --danger: #ff8a8a;
-  --line: rgba(255, 255, 255, 0.12);
+  /*
+   * ハンズのコーポレートカラー。hands.net の実装から取得した値をそのまま使う。
+   *   --brand        : <meta name="theme-color"> とロゴの塗り色
+   *   --brand-dark   : ボタン押下時の背景色
+   *   --brand-accent : レビューの星のグラデーション色
+   */
+  --brand: #006b30;
+  --brand-dark: #004022;
+  --brand-accent: #fbc800;
+
+  /* ブランドグリーンをさらに沈めた、画面全体の下地 */
+  --bg: #04150c;
+  --bg-2: #0a2716;
+  --fg: #edf5ef;
+  --muted: #9ab8a6;
+  --accent: var(--brand-accent);
+  --danger: #ff9b8f;
+  --line: rgba(255, 255, 255, 0.14);
   color-scheme: dark;
 }
 
@@ -28,8 +39,9 @@ body {
     'Yu Gothic UI', sans-serif;
   color: var(--fg);
   background:
-    radial-gradient(1000px 600px at 12% -8%, rgba(120, 148, 255, 0.22), transparent 60%),
-    radial-gradient(900px 620px at 88% 4%, rgba(216, 117, 255, 0.18), transparent 62%),
+    radial-gradient(1000px 600px at 12% -8%, rgba(0, 107, 48, 0.55), transparent 62%),
+    radial-gradient(900px 620px at 88% 2%, rgba(80, 172, 89, 0.28), transparent 60%),
+    radial-gradient(700px 500px at 50% 108%, rgba(251, 200, 0, 0.1), transparent 66%),
     linear-gradient(180deg, var(--bg), var(--bg-2));
   background-attachment: fixed;
   min-height: 100vh;
@@ -53,7 +65,7 @@ body {
   margin: 0 0 0.4rem;
   font-size: clamp(1.3rem, 4.6vw, 1.9rem);
   letter-spacing: 0.02em;
-  background: linear-gradient(100deg, #fff, var(--accent) 45%, #a8c6ff);
+  background: linear-gradient(100deg, #fff, var(--accent) 42%, #6fd79a);
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -97,11 +109,11 @@ body {
 .finder input:focus {
   outline: none;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(255, 212, 94, 0.18);
+  box-shadow: 0 0 0 3px rgba(251, 200, 0, 0.22);
 }
 
 .finder input::placeholder {
-  color: rgba(232, 236, 244, 0.32);
+  color: rgba(237, 245, 239, 0.3);
   letter-spacing: 0.06em;
 }
 
@@ -111,7 +123,7 @@ body {
   font-size: 0.95rem;
   font-weight: 700;
   color: #1a1400;
-  background: linear-gradient(120deg, var(--accent), #ffb84e);
+  background: linear-gradient(120deg, var(--accent), #f0a800);
   border: none;
   border-radius: 10px;
   cursor: pointer;
@@ -196,7 +208,7 @@ body {
 }
 
 .meta__row dt {
-  color: rgba(152, 162, 181, 0.8);
+  color: rgba(154, 184, 166, 0.8);
 }
 
 .meta__row dd {
@@ -215,11 +227,11 @@ body {
   text-align: center;
   font-size: 0.72rem;
   line-height: 1.9;
-  color: rgba(152, 162, 181, 0.75);
+  color: rgba(154, 184, 166, 0.75);
 }
 
 .site-footer a {
-  color: rgba(255, 212, 94, 0.85);
+  color: rgba(251, 200, 0, 0.9);
 }
 
 .visually-hidden {

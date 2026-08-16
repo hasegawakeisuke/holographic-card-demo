@@ -88,7 +88,8 @@ export function rarityFromPrice(price) {
 
 /** 評価値を★表現にする（4.7 → ★★★★☆） */
 export function starsFromRating(rating) {
-  if (!rating) return '';
+  // レビュー0件の商品で「☆☆☆☆☆ 0.0 (0)」を出しても意味がないので何も表示しない
+  if (!rating || rating.count === 0) return '';
   const filled = Math.round(rating.value);
   return `${'★'.repeat(filled)}${'☆'.repeat(Math.max(0, 5 - filled))} ${rating.value.toFixed(1)} (${rating.count})`;
 }
