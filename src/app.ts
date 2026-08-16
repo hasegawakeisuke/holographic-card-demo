@@ -56,7 +56,7 @@ app.get('/api/goods/:jan', async (c) => {
 
   if (!isValidJanFormat(jan)) {
     return c.json<ApiError>(
-      { error: 'invalid_jan', message: 'JANコードは13桁の数字で指定してください。' },
+      { error: 'invalid_jan', message: 'スキャンコードは13桁の数字で指定してください。' },
       400,
     );
   }
@@ -83,7 +83,7 @@ app.get('/api/goods/:jan', async (c) => {
 
   if (res.status === 404) {
     return c.json<ApiError>(
-      { error: 'not_found', message: 'この JAN コードの商品は見つかりませんでした。' },
+      { error: 'not_found', message: 'このスキャンコードの商品は見つかりませんでした。' },
       404,
     );
   }

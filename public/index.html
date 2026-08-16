@@ -8,7 +8,7 @@
     <title>ハンズネットストアの商品をトレカっぽく表示するデモ</title>
     <meta
       name="description"
-      content="JANコードを入力すると、ハンズネットストアの商品画像をポケモンカード風のホログラフィックカードとして表示します。"
+      content="スキャンコードを入力すると、ハンズネットストアの商品画像をポケモンカード風のホログラフィックカードとして表示します。"
     />
     <link rel="stylesheet" href="/styles/app.css" />
     <link rel="stylesheet" href="/styles/card.css" />
@@ -22,14 +22,14 @@
       <header class="site-header">
         <h1 class="site-title">ハンズネットストアの商品をトレカっぽく表示するデモ</h1>
         <p class="site-lead">
-          JANコードを入力すると、ハンズネットストアの商品をポケモンカード風に加工して表示します。<br />
+          スキャンコードを入力すると、ハンズネットストアの商品をポケモンカード風に加工して表示します。<br />
           カードにマウスを乗せる（スマホならなぞる）と光ります。
         </p>
       </header>
 
       <form class="finder" id="finder" novalidate>
         <div class="finder__field">
-          <label class="visually-hidden" for="jan">JANコード</label>
+          <label class="visually-hidden" for="jan">スキャンコード</label>
           <input
             id="jan"
             name="jan"
@@ -105,7 +105,7 @@
             <div class="card__glare"></div>
 
             <div class="card__placeholder" id="c-placeholder">
-              JANコードを入力すると<br />ここにカードが表示されます
+              スキャンコードを入力すると<br />ここにカードが表示されます
             </div>
           </div>
         </div>

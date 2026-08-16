@@ -1,6 +1,6 @@
 # pokecard-hands
 
-JANコードを入力すると、[ハンズネットストア](https://hands.net/)の商品をポケモンカード風の
+スキャンコードを入力すると、[ハンズネットストア](https://hands.net/)の商品をポケモンカード風の
 ホログラフィックカードとして表示するデモ。
 
 ホロ効果そのものの実装解説は [docs/holographic-css.md](docs/holographic-css.md) にある。
@@ -34,7 +34,7 @@ public/            静的アセット（ビルド不要。そのまま配信さ�
   js/main.js       画面制御
   js/card.js       ポインタ追従（CSS変数の書き換えのみ）
   js/pokecard.js   タイプ定義・カテゴリ対応・レアリティ導出・わざの組み立て
-  js/jan.js        JANコードの正規化・検証
+  js/jan.js        スキャンコードの正規化・検証
 src/
   index.ts         Cloudflare Workers エントリ
   app.ts           Hono ルート定義（プラットフォーム非依存）
@@ -54,7 +54,7 @@ docs/
 
 **1. 画像とメタ情報を分離する**
 
-商品画像の URL は JAN コードから機械的に決まる（`https://cdn.hands.net/images/{JAN}-{n}.jpg`）。
+商品画像の URL はスキャンコードから機械的に決まる（`https://cdn.hands.net/images/{JAN}-{n}.jpg`）。
 しかも CORS が `*` で開いており、ホットリンク制限もない。
 
 そのためフロントは API を待たずに画像を表示し、商品名・価格は後追いで流し込む。

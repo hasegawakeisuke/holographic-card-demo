@@ -176,7 +176,7 @@ function pushUrl() {
 
 async function run(jan, { push = true } = {}) {
   if (!isValidFormat(jan)) {
-    setHint('JANコードは13桁の数字で入力してください。', 'error');
+    setHint('スキャンコードは13桁の数字で入力してください。', 'error');
     return;
   }
   if (inFlight) inFlight.abort();
@@ -227,8 +227,8 @@ async function run(jan, { push = true } = {}) {
 
 function handleApiError(body, jan) {
   const messages = {
-    not_found: 'この JAN コードの商品はハンズネットストアに見つかりませんでした。',
-    invalid_jan: 'JANコードの形式が正しくありません。',
+    not_found: 'このスキャンコードの商品はハンズネットストアに見つかりませんでした。',
+    invalid_jan: 'スキャンコードの形式が正しくありません。',
     upstream_timeout: 'ハンズネットストアの応答がありませんでした。時間をおいてお試しください。',
     upstream_error: 'ハンズネットストアへの接続に失敗しました。',
   };
