@@ -110,6 +110,12 @@
           </div>
         </div>
 
+        <!--
+          タッチ端末専用の案内。PC では CSS で非表示のまま。
+          カードを傾ける操作はモーダルの中だけで行える。
+        -->
+        <p class="tap-hint" id="tap-hint">カードをタップすると拡大して傾けられます</p>
+
         <div class="thumbs" id="thumbs"></div>
 
         <!--
@@ -170,6 +176,16 @@
         </p>
       </footer>
     </div>
+
+    <!--
+      カード拡大モーダル。タッチ端末でのみ開く。
+      中身はページ内のカード要素そのものを移動させて入れる（複製しない）ので、
+      表示中の内容やイベントがそのまま引き継がれる。
+    -->
+    <dialog class="card-modal" id="card-modal" aria-label="カードの拡大表示">
+      <div class="card-modal__slot" id="card-modal-slot"></div>
+      <button type="button" class="card-modal__close" id="card-modal-close">閉じる</button>
+    </dialog>
 
     <script type="module" src="/js/main.js"></script>
   </body>

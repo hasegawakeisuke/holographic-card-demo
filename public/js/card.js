@@ -9,7 +9,14 @@
 /** 最大傾き */
 const MAX_TILT_DEG = 16;
 
-export function attachPointerEffect(cardEl) {
+/**
+ * @param cardEl  対象のカード
+ * @param isEnabled 追従を有効にするか返す関数。
+ *   タッチ端末では、モーダルを開いている間だけ true を返すようにしている。
+ *   ページ内のカードで傾きを拾うと、指の動きがスクロールと取り合いになるため。
+ *   PC では常に true なので挙動は一切変わらない。
+ */
+export function attachPointerEffect(cardEl, isEnabled = () => true) {
   const inner = cardEl.querySelector('.card__inner');
   if (!inner) return;
 
@@ -34,6 +41,7 @@ export function attachPointerEffect(cardEl) {
   };
 
   const onMove = (e) => {
+    if (!isEnabled()) return;
     const rect = cardEl.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     pending = {
@@ -44,6 +52,7 @@ export function attachPointerEffect(cardEl) {
   };
 
   const onEnter = () => {
+    if (!isEnabled()) return;
     cardEl.classList.add('is-active');
     cardEl.style.setProperty('--o', '1');
   };

@@ -12,6 +12,7 @@
 
 import { hasValidCheckDigit, imageUrl, isValidFormat, normalize } from './jan.js';
 import { attachPointerEffect, starsFromRating } from './card.js';
+import { isTouchDevice, setupCardModal } from './modal.js';
 import {
   RARITIES,
   RARITY_LABEL,
@@ -66,7 +67,13 @@ const state = {
 
 let inFlight = null;
 
-attachPointerEffect(el.card);
+/*
+ * タッチ端末ではページ内のカードで傾きを拾わない（スクロールと取り合いになるため）。
+ * モーダルを開いている間だけ有効になる。PC では常に有効で挙動は変わらない。
+ */
+const isCardModalOpen = setupCardModal(el.card);
+attachPointerEffect(el.card, () => !isTouchDevice() || isCardModalOpen());
+
 buildControlOptions();
 bindEvents();
 restoreFromUrl();
