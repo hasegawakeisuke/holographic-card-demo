@@ -72,36 +72,37 @@
   --rest: 0;
   --shine-opacity: 0;
   --pattern-opacity: 0;
-  --glare-opacity: 0.5;
+  --glare-opacity: 0.42;
 }
 .card[data-rarity='rare'] {
   --rest: 0.32;
   --shine-opacity: 0.4;
   --pattern-opacity: 0.72;
-  --glare-opacity: 0.6;
+  --glare-opacity: 0.5;
 }
 .card[data-rarity='holo'] {
   --rest: 0.32;
   --shine-opacity: 0.52;
   --pattern-opacity: 0.78;
-  --glare-opacity: 0.72;
+  --glare-opacity: 0.6;
 }
 .card[data-rarity='ultra'] {
   --rest: 0.36;
   --shine-opacity: 0.6;
   --pattern-opacity: 0.88;
-  --glare-opacity: 0.85;
+  --glare-opacity: 0.7;
 }
 .card[data-rarity='secret'] {
   --rest: 0.38;
   --shine-opacity: 0.7;
   --pattern-opacity: 0.95;
-  --glare-opacity: 1;
+  --glare-opacity: 0.8;
 }
 
 /* コモンは箔が無いので、静止時の虹色アニメーションも回さない */
 .card[data-rarity='common'] .card__shine,
-.card[data-rarity='common'] .card__pattern {
+.card[data-rarity='common'] .card__pattern,
+.card[data-rarity='common'] .card__foil {
   display: none;
 }
 
@@ -529,11 +530,25 @@
 
 /* ------------------------------------------------------------ わざ・数値欄 */
 
+/*
+ * 文字が載る欄は背面の箔をそのまま透かすと読みづらくなるので、
+ * 白いベールを敷いて弱めている。完全に不透明にはせず、
+ * 箔の気配は残す程度に留めた（全面絵柄では別途暗いパネルを当てる）。
+ */
 .card__attacks {
   display: grid;
   gap: 0.3em;
-  padding: 0.35em 0;
+  padding: 0.35em 0.5em;
+  margin-inline: -0.2em;
   border-top: 1px solid rgba(0, 0, 0, 0.22);
+  /*
+   * 一律の白だとタイプによってカードから浮くので、そのタイプの最も淡い
+   * 地色 --face-a を薄めて使う。color-mix 非対応の環境では前段の白い
+   * 指定が残るだけで、可読性は保たれる（背景ごと消えることはない）。
+   */
+  background: rgba(255, 255, 255, 0.44);
+  background: color-mix(in srgb, var(--face-a) 57%, transparent);
+  border-radius: 3px;
 }
 
 .card__attacks:empty {
@@ -583,9 +598,18 @@
   display: flex;
   justify-content: space-between;
   gap: 0.4em;
-  padding: 0.3em 0;
+  padding: 0.3em 0.5em;
+  margin-inline: -0.2em;
   border-top: 1px solid rgba(0, 0, 0, 0.22);
   border-bottom: 1px solid rgba(0, 0, 0, 0.22);
+  /*
+   * 一律の白だとタイプによってカードから浮くので、そのタイプの最も淡い
+   * 地色 --face-a を薄めて使う。color-mix 非対応の環境では前段の白い
+   * 指定が残るだけで、可読性は保たれる（背景ごと消えることはない）。
+   */
+  background: rgba(255, 255, 255, 0.44);
+  background: color-mix(in srgb, var(--face-a) 57%, transparent);
+  border-radius: 3px;
   font-size: clamp(0.36rem, 1.7cqw, 0.5rem);
 }
 
@@ -639,7 +663,8 @@
   padding: 0.5em 0.7em;
   border-top: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.48);
+  background: color-mix(in srgb, var(--face-a) 61%, transparent);
   font-size: clamp(0.5rem, 2.3cqw, 0.68rem);
   font-style: italic;
   line-height: 1.5;
@@ -739,7 +764,7 @@
   background-size: 160% 160%;
   background-position: calc(100% - var(--mx)) calc(100% - var(--my));
   mix-blend-mode: color-dodge;
-  opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.55);
+  opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.42);
   filter: brightness(0.85) contrast(1.6);
 }
 
@@ -781,15 +806,96 @@
   mask-repeat: repeat;
 }
 
+/*
+ * 箔の位置の切り替え（試作）。
+ *
+ * data-foil="under" … 既定。箔を画像の下に敷き、外枠の縁と文字まわりに見せる
+ * data-foil="over"   … パターン層が商品画像の上に乗る
+ *
+ * 実物のカードは箔が印刷の下にあるため、イラスト部分には柄が出ず
+ * 枠や文字まわりだけが光る。"under" はそれに寄せた見え方。
+ *
+ * .card__foil は2箇所に置いている。
+ *   card__inner の直下 … 外枠の縁（padding 部分）に出る
+ *   card__face の直下  … カード面の、文字やわざ欄の背面に出る
+ * どちらも商品画像より背面なので、写真の上には柄が乗らない。
+ */
+.card__foil {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+
+  background-image: repeating-linear-gradient(
+    115deg,
+    rgb(255, 119, 115) 2%,
+    rgba(255, 237, 95, 1) 7%,
+    rgba(168, 255, 95, 1) 12%,
+    rgba(131, 255, 247, 1) 17%,
+    rgba(120, 148, 255, 1) 22%,
+    rgb(216, 117, 255) 27%,
+    rgb(255, 119, 115) 32%
+  );
+  background-size: 180% 180%;
+  background-position: calc(var(--mx) * 0.9) calc(var(--my) * 0.9);
+  mix-blend-mode: color-dodge;
+  filter: brightness(0.85) contrast(1.9) saturate(1.4);
+  opacity: calc(max(var(--rest), var(--o)) * var(--pattern-opacity) * 0.55);
+
+  -webkit-mask-image: var(--pattern);
+  mask-image: var(--pattern);
+  -webkit-mask-size: var(--pattern-size);
+  mask-size: var(--pattern-size);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+
+/* 箔より前に出す。これが無いと商品画像や文字が箔の下に潜ってしまう */
+.card__face > *:not(.card__foil) {
+  position: relative;
+  z-index: 1;
+}
+
+/* カード面は枠の箔より前。結果として枠の箔は縁の余白にだけ見える */
+.card__face {
+  z-index: 1;
+}
+
+/* どちらか一方だけを使う */
+.card[data-foil='over'] .card__foil,
+.card[data-foil='under'] .card__pattern {
+  display: none;
+}
+
+/* 静止時のゆらぎは箔の位置によらず効かせる */
+.card:not(.is-active) .card__foil {
+  animation: shine-drift 9s ease-in-out infinite alternate;
+}
+
+/*
+ * 全面絵柄では画像がカード面を覆うため、face 側の箔は隠れる。
+ * ただし card__inner 側の箔は外枠の縁に残るので、under のままでも
+ * 「縁だけが光る」見え方になる。従来のように over へ戻す必要はない。
+ */
+.card[data-layout='full-art'] .card__face > .card__foil {
+  display: none;
+}
+
 /* ポインタ位置の光沢 */
 .card__glare {
   background-image: radial-gradient(
     farthest-corner circle at var(--mx) var(--my),
-    rgba(255, 255, 255, 0.85) 8%,
-    rgba(255, 255, 255, 0.5) 20%,
-    rgba(0, 0, 0, 0.35) 100%
+    rgba(255, 255, 255, 0.55) 10%,
+    rgba(255, 255, 255, 0.28) 26%,
+    rgba(0, 0, 0, 0.28) 100%
   );
-  mix-blend-mode: overlay;
+  /*
+   * overlay は明部をさらに明るくするため、白い商品写真だと飛びやすい。
+   * soft-light は同じく明暗を強調するがハイライトが飽和しにくいので、
+   * 白飛びを避けたいこの用途にはこちらが合う。
+   */
+  mix-blend-mode: soft-light;
   opacity: calc(var(--o) * var(--glare-opacity));
   z-index: 3;
 }
@@ -880,7 +986,8 @@
   }
   .card.is-loading .card__face,
   .card:not(.is-active) .card__shine,
-  .card:not(.is-active) .card__pattern {
+  .card:not(.is-active) .card__pattern,
+  .card:not(.is-active) .card__foil {
     animation: none;
   }
 }
