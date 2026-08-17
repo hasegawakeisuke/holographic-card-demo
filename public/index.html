@@ -99,9 +99,14 @@
               </div>
             </div>
 
-            <!-- ホロ効果。順序に意味がある（multiply → color-dodge → glare） -->
+            <!--
+              ホロ効果。順序に意味がある
+              （multiply → color-dodge → 箔のパターン → glare）
+              パターン層はレアリティごとに柄が変わる。コモンには柄が無い。
+            -->
             <div class="card__shine"></div>
             <div class="card__shine card__shine--dodge"></div>
+            <div class="card__pattern"></div>
             <div class="card__glare"></div>
 
             <div class="card__placeholder" id="c-placeholder">
