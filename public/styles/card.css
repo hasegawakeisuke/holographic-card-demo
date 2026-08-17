@@ -34,6 +34,8 @@
   --pattern-opacity: 0;
   --pattern: none;
   --pattern-size: auto;
+  /* 箔の全体的な効き。SR だけ大胆に見せたいので上書きできるようにしている */
+  --pattern-scale: 0.55;
   --frame-a: #d8d8dd;
   --frame-b: #8f8f99;
   --frame-c: #f2f2f5;
@@ -93,9 +95,10 @@
   --glare-opacity: 0.7;
 }
 .card[data-rarity='secret'] {
-  --rest: 0.38;
+  --rest: 0.44;
   --shine-opacity: 0.7;
-  --pattern-opacity: 0.95;
+  --pattern-opacity: 1;
+  --pattern-scale: 0.8;
   --glare-opacity: 0.8;
 }
 
@@ -136,12 +139,25 @@
   --pattern-size: 13px 13px, 7px 7px;
 }
 
-/* ラメ。細かい粒を密に敷き詰める */
+/*
+ * 銀河。星屑と星雲を重ねる。
+ *
+ * 規則的なタイルを重ねると周期が揃って格子に見えてしまうため、
+ * タイルの辺を互いに素な数（23 / 17 / 11 px）にしている。最小公倍数が
+ * 大きくなるので周期が視認できず、星が不規則に散っているように見える。
+ * さらにタイル内の中心位置をずらして並びの規則性を消している。
+ *
+ * 最後の2枚はカード全面に広がる星雲のもや。これが無いと
+ * ただの星空で、銀河の奥行きが出ない。
+ */
 .card[data-rarity='secret'] {
   --pattern:
-    radial-gradient(circle, #000 30%, transparent 31%),
-    radial-gradient(circle, #000 20%, transparent 21%);
-  --pattern-size: 7px 7px, 4px 4px;
+    radial-gradient(circle at 32% 24%, #000 0 11%, transparent 13%),
+    radial-gradient(circle at 68% 71%, #000 0 9%, transparent 11%),
+    radial-gradient(circle at 47% 83%, #000 0 7%, transparent 9%),
+    radial-gradient(ellipse 62% 46% at 33% 38%, rgba(0, 0, 0, 0.8) 0%, transparent 70%),
+    radial-gradient(ellipse 52% 62% at 74% 63%, rgba(0, 0, 0, 0.62) 0%, transparent 72%);
+  --pattern-size: 23px 23px, 17px 17px, 11px 11px, 100% 100%, 100% 100%;
 }
 
 /* ------------------------------------------------------------ タイプ別の色 */
@@ -796,7 +812,7 @@
   background-position: calc(var(--mx) * 0.9) calc(var(--my) * 0.9);
   mix-blend-mode: color-dodge;
   filter: brightness(0.85) contrast(1.9) saturate(1.4);
-  opacity: calc(max(var(--rest), var(--o)) * var(--pattern-opacity) * 0.55);
+  opacity: calc(max(var(--rest), var(--o)) * var(--pattern-opacity) * var(--pattern-scale));
 
   -webkit-mask-image: var(--pattern);
   mask-image: var(--pattern);
@@ -841,7 +857,7 @@
   background-position: calc(var(--mx) * 0.9) calc(var(--my) * 0.9);
   mix-blend-mode: color-dodge;
   filter: brightness(0.85) contrast(1.9) saturate(1.4);
-  opacity: calc(max(var(--rest), var(--o)) * var(--pattern-opacity) * 0.55);
+  opacity: calc(max(var(--rest), var(--o)) * var(--pattern-opacity) * var(--pattern-scale));
 
   -webkit-mask-image: var(--pattern);
   mask-image: var(--pattern);
