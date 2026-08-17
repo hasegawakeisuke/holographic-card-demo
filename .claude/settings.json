@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "permissions": {
+    "ask": [
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git merge *)",
+      "Bash(git rebase *)",
+      "Bash(git reset *)",
+      "Bash(git revert *)",
+      "Bash(git cherry-pick *)",
+      "Bash(git checkout *)",
+      "Bash(git switch *)",
+      "Bash(git restore *)",
+      "Bash(git clean *)",
+      "Bash(git tag *)",
+      "Bash(git remote *)",
+      "Bash(git config *)",
+      "Bash(gh pr create *)",
+      "Bash(gh pr merge *)",
+      "Bash(gh release *)"
+    ]
+  },
+
+  "autoMode": {
+    "soft_deny": [
+      "$defaults",
+      "git の書き込み操作（commit / push / merge / rebase / reset / revert / checkout / tag / remote 変更）は、ユーザーがそのターンで明示的に指示していない限り実行しない。過去のターンでの承認は次の変更には引き継がれない。"
+    ]
+  },
+
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Bash(git *)",
+            "statusMessage": "git 操作を確認中",
+            "command": "jq -r '.tool_input.command // \"\"' | grep -qE '(^|[;&|(]|&&|\\|\\|)[[:space:]]*git[[:space:]]+(commit|push|merge|rebase|reset|revert|cherry-pick|clean|am|apply|filter-branch|update-ref|remote|config|tag|checkout|switch|restore|rm|mv|stash[[:space:]]+(drop|clear|pop))' && echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"git の書き込み操作です。CLAUDE.md のルールによりユーザーの明示的な指示が必要です。\"}}' || true"
+          }
+        ]
+      }
+    ]
+  }
+}
