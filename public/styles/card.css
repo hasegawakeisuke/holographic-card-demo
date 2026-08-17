@@ -30,6 +30,12 @@
    */
   --shine-opacity: 0.55;
   --glare-opacity: 0.7;
+  /* 箔のパターン。レアリティごとに上書きされる。既定は柄なし */
+  --pattern-opacity: 0;
+  --pattern: none;
+  --pattern-size: auto;
+  /* 箔の全体的な効き。SR だけ大胆に見せたいので上書きできるようにしている */
+  --pattern-scale: 0.55;
   --frame-a: #d8d8dd;
   --frame-b: #8f8f99;
   --frame-c: #f2f2f5;
@@ -51,42 +57,107 @@
 
 /* ---------------------------------------------------------- レアリティ */
 
-/* 価格帯からレアリティを決める。高いほど派手に光る（色には関与しない） */
-
 /*
- * コモンは箔なしの紙なので虹色を出さない。
- * --rest は静止時の下限だが、コモンだけは 0 にして「触っても虹色が出ない」
- * ようにしている（--shine-opacity が 0 なので実質どちらでも消えるが、
- * 箔を持たないという意図を変数側にも残しておく）。
+ * 価格帯からレアリティを決める（色には関与しない）。
  *
- * ただし光沢（glare）だけは残す。実物のコモンも傾ければ紙の表面がてかるし、
- * 完全に無反応だと操作しても壊れているように見えるため。
+ * 実物のカードは「レアリティが上がると箔の"柄"が変わる」もので、
+ * 濃さだけが変わるわけではない。そこで3つの軸で差を付けている。
+ *
+ *   --rest             静止時の下限。コモンは 0 = 触るまで箔が出ない
+ *   --shine-opacity    虹色そのものの濃さ
+ *   --pattern-opacity  箔のパターン層の強さ（柄は --pattern で切り替え）
+ *
+ * コモンは箔なしの紙なので虹色もパターンも 0。ただし光沢（glare）だけは残す。
+ * 実物のコモンも、傾ければ紙の表面がてかるため。
  */
 .card[data-rarity='common'] {
   --rest: 0;
   --shine-opacity: 0;
-  --glare-opacity: 0.5;
+  --pattern-opacity: 0;
+  --glare-opacity: 0.42;
 }
 .card[data-rarity='rare'] {
-  --shine-opacity: 0.45;
-  --glare-opacity: 0.62;
+  --rest: 0.32;
+  --shine-opacity: 0.4;
+  --pattern-opacity: 0.72;
+  --glare-opacity: 0.5;
 }
 .card[data-rarity='holo'] {
-  --shine-opacity: 0.62;
-  --glare-opacity: 0.72;
+  --rest: 0.32;
+  --shine-opacity: 0.52;
+  --pattern-opacity: 0.78;
+  --glare-opacity: 0.6;
 }
 .card[data-rarity='ultra'] {
-  --shine-opacity: 0.78;
-  --glare-opacity: 0.85;
+  --rest: 0.36;
+  --shine-opacity: 0.6;
+  --pattern-opacity: 0.88;
+  --glare-opacity: 0.7;
 }
 .card[data-rarity='secret'] {
-  --shine-opacity: 0.95;
-  --glare-opacity: 1;
+  --rest: 0.44;
+  --shine-opacity: 0.7;
+  --pattern-opacity: 1;
+  --pattern-scale: 0.8;
+  --glare-opacity: 0.8;
 }
 
-/* 箔が無いので、静止時にゆっくり虹色を流すアニメーションも回さない */
-.card[data-rarity='common'] .card__shine {
+/* コモンは箔が無いので、静止時の虹色アニメーションも回さない */
+.card[data-rarity='common'] .card__shine,
+.card[data-rarity='common'] .card__pattern,
+.card[data-rarity='common'] .card__foil {
   display: none;
+}
+
+/* ---------------------------------------------------------- 箔の柄の定義 */
+
+/*
+ * レアリティごとの箔のパターン。mask-image に渡すので、
+ * 不透明な部分にだけ虹色が出る = 柄の形に光る。
+ * 画像アセットは使わず、すべてグラデーションで組んでいる。
+ */
+
+/* 走査線。細い縦縞が流れる、いちばん控えめな箔 */
+.card[data-rarity='rare'] {
+  --pattern: repeating-linear-gradient(90deg, #000 0 2px, transparent 2px 6px);
+  --pattern-size: 100% 100%;
+}
+
+/* ダイヤ格子。45度の線を2方向に交差させると菱形の網目になる */
+.card[data-rarity='holo'] {
+  --pattern:
+    repeating-linear-gradient(45deg, #000 0 2px, transparent 2px 11px),
+    repeating-linear-gradient(-45deg, #000 0 2px, transparent 2px 11px);
+  --pattern-size: 100% 100%, 100% 100%;
+}
+
+/* 宇宙。粗密の異なる粒を2枚重ねて星屑のように散らす */
+.card[data-rarity='ultra'] {
+  --pattern:
+    radial-gradient(circle, #000 26%, transparent 27%),
+    radial-gradient(circle, #000 15%, transparent 16%);
+  --pattern-size: 13px 13px, 7px 7px;
+}
+
+/*
+ * 銀河。星屑と星雲を重ねる。
+ *
+ * 規則的なタイルを重ねると周期が揃って格子に見えてしまうため、
+ * タイルの辺を互いに素な数（23 / 17 / 11 px）にしている。最小公倍数が
+ * 大きくなるので周期が視認できず、星が不規則に散っているように見える。
+ * さらにタイル内の中心位置をずらして並びの規則性を消している。
+ *
+ * 最後の2枚はカード全面に広がる星雲のもや。これが無いと
+ * ただの星空で、銀河の奥行きが出ない。
+ */
+.card[data-rarity='secret'] {
+  --pattern:
+    radial-gradient(circle at 32% 24%, #000 0 11%, transparent 13%),
+    radial-gradient(circle at 68% 71%, #000 0 9%, transparent 11%),
+    radial-gradient(circle at 47% 83%, #000 0 7%, transparent 9%),
+    radial-gradient(ellipse 62% 46% at 33% 38%, rgba(0, 0, 0, 0.8) 0%, transparent 70%),
+    radial-gradient(ellipse 52% 62% at 74% 63%, rgba(0, 0, 0, 0.62) 0%, transparent 72%);
+  --pattern-size: 23px 23px, 17px 17px, 11px 11px, 100% 100%, 100% 100%;
 }
 
 /* ------------------------------------------------------------ タイプ別の色 */
@@ -475,11 +546,25 @@
 
 /* ------------------------------------------------------------ わざ・数値欄 */
 
+/*
+ * 文字が載る欄は背面の箔をそのまま透かすと読みづらくなるので、
+ * 白いベールを敷いて弱めている。完全に不透明にはせず、
+ * 箔の気配は残す程度に留めた（全面絵柄では別途暗いパネルを当てる）。
+ */
 .card__attacks {
   display: grid;
   gap: 0.3em;
-  padding: 0.35em 0;
+  padding: 0.35em 0.5em;
+  margin-inline: -0.2em;
   border-top: 1px solid rgba(0, 0, 0, 0.22);
+  /*
+   * 一律の白だとタイプによってカードから浮くので、そのタイプの最も淡い
+   * 地色 --face-a を薄めて使う。color-mix 非対応の環境では前段の白い
+   * 指定が残るだけで、可読性は保たれる（背景ごと消えることはない）。
+   */
+  background: rgba(255, 255, 255, 0.44);
+  background: color-mix(in srgb, var(--face-a) 57%, transparent);
+  border-radius: 3px;
 }
 
 .card__attacks:empty {
@@ -529,9 +614,18 @@
   display: flex;
   justify-content: space-between;
   gap: 0.4em;
-  padding: 0.3em 0;
+  padding: 0.3em 0.5em;
+  margin-inline: -0.2em;
   border-top: 1px solid rgba(0, 0, 0, 0.22);
   border-bottom: 1px solid rgba(0, 0, 0, 0.22);
+  /*
+   * 一律の白だとタイプによってカードから浮くので、そのタイプの最も淡い
+   * 地色 --face-a を薄めて使う。color-mix 非対応の環境では前段の白い
+   * 指定が残るだけで、可読性は保たれる（背景ごと消えることはない）。
+   */
+  background: rgba(255, 255, 255, 0.44);
+  background: color-mix(in srgb, var(--face-a) 57%, transparent);
+  border-radius: 3px;
   font-size: clamp(0.36rem, 1.7cqw, 0.5rem);
 }
 
@@ -585,7 +679,8 @@
   padding: 0.5em 0.7em;
   border-top: 1px solid rgba(0, 0, 0, 0.18);
   border-bottom: 1px solid rgba(0, 0, 0, 0.18);
-  background: rgba(255, 255, 255, 0.45);
+  background: rgba(255, 255, 255, 0.48);
+  background: color-mix(in srgb, var(--face-a) 61%, transparent);
   font-size: clamp(0.5rem, 2.3cqw, 0.68rem);
   font-style: italic;
   line-height: 1.5;
@@ -632,7 +727,8 @@
  * 静止時もゆっくり虹色が流れるようにしておく。ホバーしないと何も起きない
  * 作りだと、スクリーンショットや初見でただの商品写真に見えてしまうため。
  */
-.card:not(.is-active) .card__shine {
+.card:not(.is-active) .card__shine,
+.card:not(.is-active) .card__pattern {
   animation: shine-drift 9s ease-in-out infinite alternate;
 }
 
@@ -684,19 +780,138 @@
   background-size: 160% 160%;
   background-position: calc(100% - var(--mx)) calc(100% - var(--my));
   mix-blend-mode: color-dodge;
-  opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.55);
+  opacity: calc(max(var(--rest), var(--o)) * var(--shine-opacity) * 0.42);
   filter: brightness(0.85) contrast(1.6);
+}
+
+/*
+ * 3層目: 箔のパターン。
+ * 虹色のグラデーションを --pattern の形に mask で切り抜くことで、
+ * 「柄の形に光る」という実物の箔の見え方を作っている。
+ * レアリティが上がると柄が変わる（走査線 → ダイヤ格子 → 宇宙 → ラメ）。
+ */
+.card__pattern {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 2;
+  transition: opacity 0.35s ease;
+
+  background-image: repeating-linear-gradient(
+    115deg,
+    rgb(255, 119, 115) 2%,
+    rgba(255, 237, 95, 1) 7%,
+    rgba(168, 255, 95, 1) 12%,
+    rgba(131, 255, 247, 1) 17%,
+    rgba(120, 148, 255, 1) 22%,
+    rgb(216, 117, 255) 27%,
+    rgb(255, 119, 115) 32%
+  );
+  background-size: 180% 180%;
+  background-position: calc(var(--mx) * 0.9) calc(var(--my) * 0.9);
+  mix-blend-mode: color-dodge;
+  filter: brightness(0.85) contrast(1.9) saturate(1.4);
+  opacity: calc(max(var(--rest), var(--o)) * var(--pattern-opacity) * var(--pattern-scale));
+
+  -webkit-mask-image: var(--pattern);
+  mask-image: var(--pattern);
+  -webkit-mask-size: var(--pattern-size);
+  mask-size: var(--pattern-size);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+
+/*
+ * 箔の位置の切り替え（試作）。
+ *
+ * data-foil="under" … 既定。箔を画像の下に敷き、外枠の縁と文字まわりに見せる
+ * data-foil="over"   … パターン層が商品画像の上に乗る
+ *
+ * 実物のカードは箔が印刷の下にあるため、イラスト部分には柄が出ず
+ * 枠や文字まわりだけが光る。"under" はそれに寄せた見え方。
+ *
+ * .card__foil は2箇所に置いている。
+ *   card__inner の直下 … 外枠の縁（padding 部分）に出る
+ *   card__face の直下  … カード面の、文字やわざ欄の背面に出る
+ * どちらも商品画像より背面なので、写真の上には柄が乗らない。
+ */
+.card__foil {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+
+  background-image: repeating-linear-gradient(
+    115deg,
+    rgb(255, 119, 115) 2%,
+    rgba(255, 237, 95, 1) 7%,
+    rgba(168, 255, 95, 1) 12%,
+    rgba(131, 255, 247, 1) 17%,
+    rgba(120, 148, 255, 1) 22%,
+    rgb(216, 117, 255) 27%,
+    rgb(255, 119, 115) 32%
+  );
+  background-size: 180% 180%;
+  background-position: calc(var(--mx) * 0.9) calc(var(--my) * 0.9);
+  mix-blend-mode: color-dodge;
+  filter: brightness(0.85) contrast(1.9) saturate(1.4);
+  opacity: calc(max(var(--rest), var(--o)) * var(--pattern-opacity) * var(--pattern-scale));
+
+  -webkit-mask-image: var(--pattern);
+  mask-image: var(--pattern);
+  -webkit-mask-size: var(--pattern-size);
+  mask-size: var(--pattern-size);
+  -webkit-mask-repeat: repeat;
+  mask-repeat: repeat;
+}
+
+/* 箔より前に出す。これが無いと商品画像や文字が箔の下に潜ってしまう */
+.card__face > *:not(.card__foil) {
+  position: relative;
+  z-index: 1;
+}
+
+/* カード面は枠の箔より前。結果として枠の箔は縁の余白にだけ見える */
+.card__face {
+  z-index: 1;
+}
+
+/* どちらか一方だけを使う */
+.card[data-foil='over'] .card__foil,
+.card[data-foil='under'] .card__pattern {
+  display: none;
+}
+
+/* 静止時のゆらぎは箔の位置によらず効かせる */
+.card:not(.is-active) .card__foil {
+  animation: shine-drift 9s ease-in-out infinite alternate;
+}
+
+/*
+ * 全面絵柄では画像がカード面を覆うため、face 側の箔は隠れる。
+ * ただし card__inner 側の箔は外枠の縁に残るので、under のままでも
+ * 「縁だけが光る」見え方になる。従来のように over へ戻す必要はない。
+ */
+.card[data-layout='full-art'] .card__face > .card__foil {
+  display: none;
 }
 
 /* ポインタ位置の光沢 */
 .card__glare {
   background-image: radial-gradient(
     farthest-corner circle at var(--mx) var(--my),
-    rgba(255, 255, 255, 0.85) 8%,
-    rgba(255, 255, 255, 0.5) 20%,
-    rgba(0, 0, 0, 0.35) 100%
+    rgba(255, 255, 255, 0.55) 10%,
+    rgba(255, 255, 255, 0.28) 26%,
+    rgba(0, 0, 0, 0.28) 100%
   );
-  mix-blend-mode: overlay;
+  /*
+   * overlay は明部をさらに明るくするため、白い商品写真だと飛びやすい。
+   * soft-light は同じく明暗を強調するがハイライトが飽和しにくいので、
+   * 白飛びを避けたいこの用途にはこちらが合う。
+   */
+  mix-blend-mode: soft-light;
   opacity: calc(var(--o) * var(--glare-opacity));
   z-index: 3;
 }
@@ -786,7 +1001,9 @@
     transition: none;
   }
   .card.is-loading .card__face,
-  .card:not(.is-active) .card__shine {
+  .card:not(.is-active) .card__shine,
+  .card:not(.is-active) .card__pattern,
+  .card:not(.is-active) .card__foil {
     animation: none;
   }
 }

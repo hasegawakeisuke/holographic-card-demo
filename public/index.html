@@ -70,9 +70,19 @@
           data-rarity="common"
           data-layout="regular"
           data-type="colorless"
+          data-foil="under"
         >
           <div class="card__inner">
+            <!-- 外枠の縁に出る箔。card__face の背面なので、枠の余白部分だけに見える -->
+            <div class="card__foil"></div>
+
             <div class="card__face">
+              <!--
+                画像の「下」に敷く箔。data-foil="under" のときだけ表示される。
+                card__face の最初の子なので、商品画像や文字より背面に回る。
+              -->
+              <div class="card__foil"></div>
+
               <div class="card__header">
                 <span class="card__stage" id="c-stage"></span>
                 <h2 class="card__name" id="c-name">カードを生成してください</h2>
@@ -99,9 +109,14 @@
               </div>
             </div>
 
-            <!-- ホロ効果。順序に意味がある（multiply → color-dodge → glare） -->
+            <!--
+              ホロ効果。順序に意味がある
+              （multiply → color-dodge → 箔のパターン → glare）
+              パターン層はレアリティごとに柄が変わる。コモンには柄が無い。
+            -->
             <div class="card__shine"></div>
             <div class="card__shine card__shine--dodge"></div>
+            <div class="card__pattern"></div>
             <div class="card__glare"></div>
 
             <div class="card__placeholder" id="c-placeholder">
@@ -146,6 +161,14 @@
                 <option value="">自動（UR以上は全面絵柄）</option>
                 <option value="regular">通常（枠あり）</option>
                 <option value="full-art">全面絵柄</option>
+              </select>
+            </label>
+
+            <label class="control">
+              <span class="control__label">箔の位置</span>
+              <select id="ctl-foil" data-param="foil">
+                <option value="">画像の下（枠まわりのみ）</option>
+                <option value="over">画像の上</option>
               </select>
             </label>
 

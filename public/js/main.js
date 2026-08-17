@@ -53,6 +53,7 @@ const el = {
   ctlType: document.getElementById('ctl-type'),
   ctlRarity: document.getElementById('ctl-rarity'),
   ctlLayout: document.getElementById('ctl-layout'),
+  ctlFoil: document.getElementById('ctl-foil'),
   ctlEx: document.getElementById('ctl-ex'),
   ctlReset: document.getElementById('ctl-reset'),
 };
@@ -62,7 +63,7 @@ const state = {
   jan: null,
   goods: null,
   /** 空文字 / null は「自動」を意味する */
-  overrides: { type: '', rarity: '', layout: '', ex: null },
+  overrides: { type: '', rarity: '', layout: '', foil: '', ex: null },
 };
 
 let inFlight = null;
@@ -94,9 +95,10 @@ function resolve() {
   const rarity = state.overrides.rarity || autoRarity;
   const type = state.overrides.type || autoType;
   const layout = state.overrides.layout || layoutFromRarity(rarity);
+  const foil = state.overrides.foil || 'under';
   const ex = state.overrides.ex === null ? exFromRarity(rarity) : state.overrides.ex;
 
-  return { type, rarity, layout, ex, autoType, autoRarity };
+  return { type, rarity, layout, foil, ex, autoType, autoRarity };
 }
 
 // ---------------------------------------------------------------- 入力・遷移
@@ -111,13 +113,13 @@ function bindEvents() {
     btn.addEventListener('click', () => {
       el.input.value = btn.dataset.jan;
       // サンプルは自動判定の見え方を試すものなので、上書きは捨てる
-      state.overrides = { type: '', rarity: '', layout: '', ex: null };
+      state.overrides = { type: '', rarity: '', layout: '', foil: '', ex: null };
       syncControls();
       run(btn.dataset.jan);
     });
   });
 
-  for (const select of [el.ctlType, el.ctlRarity, el.ctlLayout]) {
+  for (const select of [el.ctlType, el.ctlRarity, el.ctlLayout, el.ctlFoil]) {
     select.addEventListener('change', () => {
       state.overrides[select.dataset.param] = select.value;
       render();
@@ -132,7 +134,7 @@ function bindEvents() {
   });
 
   el.ctlReset.addEventListener('click', () => {
-    state.overrides = { type: '', rarity: '', layout: '', ex: null };
+    state.overrides = { type: '', rarity: '', layout: '', foil: '', ex: null };
     syncControls();
     render();
     pushUrl();
@@ -147,6 +149,7 @@ function restoreFromUrl() {
     type: TYPES[p.get('type')] ? p.get('type') : '',
     rarity: RARITIES.includes(p.get('rarity')) ? p.get('rarity') : '',
     layout: ['regular', 'full-art'].includes(p.get('layout')) ? p.get('layout') : '',
+    foil: ['over', 'under'].includes(p.get('foil')) ? p.get('foil') : '',
     ex: p.has('ex') ? p.get('ex') === '1' : null,
   };
   syncControls();
@@ -163,7 +166,7 @@ function pushUrl() {
   const url = new URL(location.href);
   const q = url.searchParams;
   if (state.jan) q.set('jan', state.jan);
-  for (const key of ['type', 'rarity', 'layout']) {
+  for (const key of ['type', 'rarity', 'layout', 'foil']) {
     if (state.overrides[key]) q.set(key, state.overrides[key]);
     else q.delete(key);
   }
@@ -253,12 +256,13 @@ function render() {
   const goods = state.goods;
   if (!goods) return;
 
-  const { type, rarity, layout, ex } = resolve();
+  const { type, rarity, layout, foil, ex } = resolve();
   const price = goods.price?.includingTax ?? null;
 
   el.card.dataset.type = type;
   el.card.dataset.rarity = rarity;
   el.card.dataset.layout = layout;
+  el.card.dataset.foil = foil;
   el.card.dataset.availability = goods.availability;
   el.card.dataset.ex = String(ex);
 
@@ -450,6 +454,7 @@ function resetCard(jan) {
   el.card.classList.add('is-loading');
   el.card.dataset.rarity = 'common';
   el.card.dataset.layout = 'regular';
+  el.card.dataset.foil = 'under';
   el.card.dataset.type = 'colorless';
   el.card.dataset.ex = 'false';
   delete el.card.dataset.availability;
@@ -508,6 +513,7 @@ function syncControls() {
   el.ctlType.value = state.overrides.type;
   el.ctlRarity.value = state.overrides.rarity;
   el.ctlLayout.value = state.overrides.layout;
+  el.ctlFoil.value = state.overrides.foil;
   el.ctlEx.checked =
     state.overrides.ex === null ? resolve().ex : state.overrides.ex;
 }
