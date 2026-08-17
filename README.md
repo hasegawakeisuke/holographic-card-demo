@@ -136,14 +136,17 @@ docs/
 
 ### タイプ（カテゴリスラッグから）
 
-ハンズの15分類（`hands.net/cate/`）をポケカの11タイプに対応させている。
+ハンズの15分類（`hands.net/cate/`）をポケモンの11タイプに対応させている。
 日本語名は表記ゆれがあるため、判定にはURLのスラッグを使う。
+
+タイプ名は**本編ゲームの表記**に統一している（でんき / エスパー / かくとう / ノーマル）。
+ポケモンカード側では同じものを 雷 / 超 / 闘 / 無色 と呼ぶが、混在させない。
 
 | スラッグ | タイプ | スラッグ | タイプ |
 | --- | --- | --- | --- |
 | kitchen | ほのお | diy | はがね |
 | bathtoiletries / cleanlaundry | みず | prevention | かくとう |
-| electronics | かみなり | shoecare | あく |
+| electronics | でんき | shoecare | あく |
 | outdoor / pet | くさ | crafts | エスパー |
 | beauty-healthcare | フェアリー | party | ドラゴン |
 | stationery / interior / travel | ノーマル | (未知) | ノーマル |

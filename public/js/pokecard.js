@@ -14,6 +14,11 @@
 /**
  * `id` は URL クエリや data 属性で使う。`label` は表示名。
  * `color` はタイプの色、`icon` は 24x24 の viewBox を前提とした SVG パス。
+ *
+ * label は**本編ゲームのタイプ名**に揃えている（でんき / エスパー / かくとう / ノーマル）。
+ * ポケモンカード side では同じものを 雷 / 超 / 闘 / 無色 と呼ぶが、混在させない。
+ * id 側は TCG 由来の英名（lightning / psychic / fighting / colorless）だが、
+ * URL クエリ `?type=` に出るため互換維持の目的で据え置いている。
  */
 export const TYPES = {
   grass: {
@@ -35,7 +40,7 @@ export const TYPES = {
     icon: '<path d="M12 2.5c3.2 4.3 6.5 8 6.5 11.6A6.5 6.5 0 0 1 5.5 14C5.5 10.5 8.8 6.8 12 2.5z"/>',
   },
   lightning: {
-    label: 'かみなり',
+    label: 'でんき',
     category: '家電・AV機器',
     color: '#eab308',
     icon: '<path d="M13.5 2 5 13.2h5.2L9.4 22 19 10.2h-5.4L13.5 2z"/>',
